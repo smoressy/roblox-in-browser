@@ -1,0 +1,3126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com ws://localhost:8005 https://static.cloudflareinsights.com wss://smoresxo.shop:8005/;
+        child-src 'self';
+        manifest-src 'self';
+        worker-src 'self';
+        upgrade-insecure-requests;
+        block-all-mixed-content;
+    ">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roblox</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    canvas.default-cursor {
+      cursor: grab;
+    }
+
+    canvas.grabbing-cursor {
+      cursor: grabbing;
+    }
+
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 30px;
+      height: 30px;
+      pointer-events: none;
+      z-index: 999;
+      display: none;
+    }
+
+    #crosshair::before,
+    #crosshair::after {
+      content: "";
+      position: absolute;
+      background: black;
+    }
+
+    #crosshair::before {
+      top: 0;
+      left: 50%;
+      width: 3px;
+      height: 100%;
+      transform: translateX(-50%);
+    }
+
+    #crosshair::after {
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      transform: translateY(-50%);
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: 'Poppins', sans-serif;
+      color: white;
+    }
+
+    #loading-text {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    #loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #333;
+      border-top: 5px solid #898989;
+      border-radius: 50%;
+      animation: spin 0.5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #chat-ui-container {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 100;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #chat-toggle-icon {
+      font-size: 24px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 4px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 5px;
+      margin-right: 5px;
+      width: fit-content;
+      display: inline-block;
+    }
+
+    #chat-window {
+      width: 375px;
+      height: 200px;
+      background-color: rgb(11 11 11 / 75%);
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    #chat-log {
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      color: white;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    #chat-log p {
+      margin: 4px 0;
+      word-wrap: break-word;
+      padding-left: 5px;
+    }
+
+    #chat-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #22222200;
+      background-color: rgba(0, 0, 0, 0.3);
+      color: white;
+      border-radius: 12px;
+      box-sizing: border-box;
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #chat-input::placeholder {
+      font-family: 'Poppins', sans-serif;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #chat-input:focus {
+      outline: none;
+      border-color: #555;
+    }
+
+    #chat-log::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #chat-log::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    #chat-log::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    #chat-log::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    #player-list-ui {
+      position: absolute;
+      top: 64px;
+      right: 15px;
+      width: 240px;
+      background-color: rgba(23, 23, 23, 0.85);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      z-index: 100;
+      overflow: hidden;
+      transform: translateX(0);
+      transition: transform 0.15s ease-in-out;
+    }
+
+    #player-list-ui.hidden {
+      transform: translateX(120%);
+    }
+
+    #player-list-header {
+      display: flex;
+      align-items: center;
+      background-color: rgb(22 22 22 / 60%);
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    }
+
+    #player-list-close-icon {
+      font-size: 20px;
+      color: #b0b0b0;
+      cursor: pointer;
+      margin-right: 10px;
+      line-height: 1;
+      padding: 0;
+    }
+
+    #player-list-close-icon:hover {
+      color: #ffffff;
+    }
+
+    #player-list-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #FFFFFF;
+    }
+
+    #player-list-body {
+      padding: 4px 12px 8px 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    #player-list-body::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    #player-list-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #player-list-body::-webkit-scrollbar-thumb {
+      background-color: rgba(116, 106, 100, 0.85);
+      border-radius: 4px;
+      border: 2px solid rgba(58, 46, 40, 0.85);
+    }
+
+    #player-list-body::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(140, 130, 124, 0.9);
+    }
+
+    .player-item {
+      padding: 6px 0px;
+      font-size: 14px;
+      color: #FFFFFF;
+    }
+
+    #settings-toggle-icon {
+      font-size: 24px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 4px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 5px;
+      margin-right: 5px;
+      width: fit-content;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    #health-toggle-icon {
+      font-size: 24px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 4px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-bottom: 5px;
+      margin-right: 5px;
+      width: fit-content;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    #health-bar-container {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 100;
+      font-family: 'Poppins', sans-serif;
+      display: none;
+    }
+
+    #health-bar {
+      width: 200px;
+      height: 20px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 32px;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+
+    #health-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff4444 0%, #ff8844 50%, #44ff44 100%);
+      border-radius: 32px;
+      transition: width 0.3s ease;
+      width: 100%;
+    }
+
+    #health-text {
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      position: absolute;
+      width: 100%;
+      text-shadow: 1px 1px 2px rgb(56 56 56 / 80%);
+    }
+
+    #settings-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    }
+
+    #settings-backdrop.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #settings-menu {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 80%;
+      max-width: 800px;
+      height: 80%;
+      background: #000000c7;
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+      font-family: 'Poppins', sans-serif;
+      color: white;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transform: translate(-50%, -50%) translateY(100vh);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    #settings-menu.visible {
+      transform: translate(-50%, -50%) translateY(0);
+    }
+
+    .settings-close {
+      font-size: 28px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      background: none;
+      border: none;
+      padding: 5px;
+    }
+
+    .settings-close:hover {
+      color: white;
+    }
+
+    .settings-tabs {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-tabs .settings-close {
+      margin-left: auto;
+    }
+
+    .settings-tab {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .settings-tab:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .settings-tab.active {
+      color: white;
+      border-bottom-color: #4A9EFF;
+    }
+
+    .settings-tab i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .settings-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 25px;
+    }
+
+    .settings-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .settings-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .settings-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .player-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      transition: background 0.2s ease;
+    }
+
+    .player-entry:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .player-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .player-avatar {
+      width: 40px;
+      height: 40px;
+      background: #4A9EFF;
+      border-radius: 12px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .player-details h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .player-details p {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .action-btn {
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .action-btn.primary {
+      background: #4A9EFF;
+      border-color: #4A9EFF;
+    }
+
+    .setting-group {
+      margin-bottom: 25px;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .setting-label {
+      flex: 1;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .setting-description {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 2px;
+    }
+
+    .setting-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-switch.active {
+      background: #4A9EFF;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(24px);
+    }
+
+    .dropdown-select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 150px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .nav-arrows {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .arrow-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .arrow-btn:hover {
+      color: white;
+    }
+
+    .setting-value {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .settings-bottom {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .bottom-action-btn {
+      flex: 1;
+      padding: 12px 20px;
+      margin: 0 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .bottom-action-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .bottom-action-btn.leave {
+      border-color: #FF4757;
+      color: #FF4757;
+    }
+
+    .bottom-action-btn.respawn {
+      border-color: #FFA502;
+      color: #FFA502;
+    }
+
+    .bottom-action-btn.resume {
+      border-color: #2ED573;
+      color: #2ED573;
+    }
+
+    button,
+    input,
+    select,
+    textarea,
+    option {
+      font-family: 'Poppins', sans-serif !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    span,
+    div,
+    label {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #settings-menu button,
+    #settings-menu .action-btn,
+    #settings-menu .bottom-action-btn,
+    #settings-menu .arrow-btn,
+    .settings-close,
+    .settings-tab {
+      font-family: 'Poppins', sans-serif !important;
+    }
+
+    button,
+    .action-btn,
+    .bottom-action-btn,
+    .arrow-btn,
+    .toggle-switch,
+    .dropdown-select,
+    .setting-value,
+    textarea,
+    #chat-toggle-icon,
+    #settings-toggle-icon,
+    #player-list-close-icon,
+    .player-item,
+    .player-entry,
+    .player-details h4,
+    .player-details p,
+    .setting-label,
+    .setting-description {
+      font-family: 'Poppins', sans-serif !important;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="loading-screen">
+    <div id="loading-spinner"></div>
+  </div>
+
+  <div id="crosshair"></div>
+
+  <div id="chat-ui-container">
+    <div id="settings-toggle-icon"><i class="fas fa-cog"></i></div>
+    <div id="chat-toggle-icon"><i class="fas fa-comment"></i></div>
+    <div id="health-toggle-icon"><i class="fas fa-shield"></i></div>
+    <div id="chat-window">
+      <div id="chat-log"></div>
+      <input type="text" id="chat-input" placeholder="To chat click here or press / key" maxlength="64">
+    </div>
+  </div>
+
+  <div id="health-bar-container">
+    <div id="health-bar">
+      <div id="health-fill"></div>
+      <div id="health-text">100 / 100</div>
+    </div>
+  </div>
+
+  <div id="player-list-ui">
+    <div id="player-list-header">
+      <span id="player-list-close-icon">×</span>
+      <span id="player-list-title">Leaderboard</span>
+    </div>
+    <div id="player-list-body">
+    </div>
+  </div>
+
+  <div id="settings-backdrop"></div>
+
+  <div id="settings-menu">
+    <div class="settings-tabs">
+      <div class="settings-tab active" data-tab="people">
+        <i class="fas fa-users"></i>
+        Players
+      </div>
+      <div class="settings-tab" data-tab="settings">
+        <i class="fas fa-cog"></i>
+        Settings
+      </div>
+      <button class="settings-close">×</button>
+    </div>
+
+    <div class="settings-content">
+      <div class="tab-content active" id="people-tab">
+        <div id="people-list">
+        </div>
+      </div>
+
+      <div class="tab-content" id="settings-tab">
+        <div class="setting-group">
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Shift Lock Switch</div>
+            </div>
+            <div class="setting-control">
+              <div class="nav-arrows">
+                <button class="arrow-btn">‹</button>
+                <span class="setting-value">Off</span>
+                <button class="arrow-btn">›</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Fullscreen</div>
+            </div>
+            <div class="setting-control">
+              <div class="toggle-switch" data-setting="fullscreen">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-bottom">
+      <button class="bottom-action-btn leave">
+        Leave
+      </button>
+      <button class="bottom-action-btn respawn">
+        Respawn
+      </button>
+      <button class="bottom-action-btn resume">
+        Resume
+      </button>
+    </div>
+  </div>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+    let scene, camera, webglRenderer, canvas;
+    let localPlayerAvatarGroup, localPlayerAvatarData;
+    let clock = new THREE.Clock();
+    let directionalLight;
+    let ground;
+
+    // Global wind time (used for grass instancing)
+    let windTime = 0;
+
+    // For instanced grass – these will be set in createAnimatedGrass()
+    // window.grassParams: an array of per-instance parameters
+    // window.grassInstancedMesh: the InstancedMesh containing all grass blades
+    
+    // Infinite world optimization
+    let grassChunks = new Map();
+    let cloudChunks = new Map();
+    const CHUNK_SIZE = 100;
+    const RENDER_DISTANCE = 200;
+    const MAX_GRASS_PER_CHUNK = 1600;
+    const MAX_CLOUDS_PER_CHUNK = 2;
+    let lastPlayerChunkX = 0;
+    let lastPlayerChunkZ = 0;
+    
+    // Frustum culling
+    const frustum = new THREE.Frustum();
+    const cameraMatrix = new THREE.Matrix4();
+    
+    // Reusable objects for optimization
+    const _chunkCenter = new THREE.Vector3();
+    const _chunkBounds = new THREE.Box3();
+
+    const moveState = { forward: false, backward: false, left: false, right: false, jump: false, cameraLeft: false, cameraRight: false };
+    const moveSpeed = 8.0;
+    const rotationLerpFactor = 0.15;
+
+    const gravity = -35.0;
+    const jumpImpulse = 12.5;
+    const walkCycleSpeed = 12;
+    const walkAmplitude = 0.6;
+    const jumpPoseAmount = 0.8;
+    const idleLerpFactor = 0.1;
+    const jumpCooldown = 0.2;
+    const jumpSquashFactor = 0.15;
+    const jumpStretchFactor = 0.1;
+
+    const EMOTE_DURATION = 3.0;
+    const WAVE_AMPLITUDE = 0.8;
+    const WAVE_SPEED = 8;
+    const DANCE_AMPLITUDE = 0.6;
+    const DANCE_SPEED = 12;
+
+    let cameraTarget = new THREE.Vector3();
+    let cameraDistance = 10.0;
+    let cameraPhi = Math.PI;
+    let cameraTheta = Math.PI / 3;
+    const minCameraDistance = 3.0;
+    const maxCameraDistance = 30.0;
+    const minPolarAngle = 0.1;
+    const maxPolarAngle = Math.PI - 0.1;
+    const cameraLerpFactor = 0.1;
+    const orbitSensitivity = 0.008;
+    const zoomSensitivity = 0.1;
+    const minCameraHeight = 0.5;
+
+    let isPointerDown = false;
+    let previousMouseX = 0;
+    let previousMouseY = 0;
+
+    let isShiftLockEnabled = false;
+    let isShiftLockActive = false;
+    let shiftLockCenterX = 0;
+    let shiftLockCenterY = 0;
+    let crosshairElement;
+
+    let chatToggleIcon, chatWindow, chatLog, chatInput;
+    let isChatVisible = true;
+    let isChatInputFocused = false;
+
+    let settingsToggleIcon, settingsMenu, settingsCloseBtn;
+    let isSettingsVisible = false;
+
+    let healthToggleIcon, healthBarContainer, healthFill, healthText;
+    let isHealthModeEnabled = false;
+    let currentHealth = 100;
+    const maxHealth = 100;
+    let lastDamageTime = 0;
+    const damageInterval = 5000; // Take damage every 5 seconds
+    const damageAmount = 10;
+    let isDead = false;
+    let respawnTimer = 0;
+    const respawnDelay = 5.0; // 5 seconds
+    let ragdollParts = [];
+
+    const CHAT_BUBBLE_FADE_DURATION = 0.3;
+    const CHAT_BUBBLE_VISIBLE_DURATION = 5.0;
+    const HEAD_SIZE_CONST = 0.9;
+    const MAX_CHAT_BUBBLES = 3;
+
+    let playerListUI, playerListCloseIcon, playerListBody;
+
+    let socket;
+    let localPlayerId = null;
+    const remotePlayers = new Map();
+    const playerUpdateInterval = 16;
+    let lastPlayerUpdateSent = 0;
+
+    let loadingState = {
+      fontsLoaded: false,
+      webSocketConnected: false,
+      playerIdAssigned: false,
+      existingPlayersReceived: false,
+      chatHistoryReceived: false,
+      gameInitialized: false,
+      shadersLoaded: false,
+      grassInitialized: false,
+      cloudsInitialized: false
+    };
+
+    // OPTIMIZATION: Reusable THREE.js objects to avoid allocations in loops
+    const _vector3 = new THREE.Vector3();
+    const _cameraForward = new THREE.Vector3();
+    const _cameraRight = new THREE.Vector3();
+    const _movementDirection = new THREE.Vector3();
+    const _sphericalOffset = new THREE.Vector3();
+    const _desiredCameraPosition = new THREE.Vector3();
+    const _collisionDiff = new THREE.Vector3();
+    const _dummyObject = new THREE.Object3D(); // For instanced mesh updates and other temporary uses
+    const _lightPositionOffset = new THREE.Vector3(10, 20, 15); // For dynamic shadows
+
+    function checkLoadingComplete() {
+      const allLoaded = Object.values(loadingState).every(state => state === true);
+      if (allLoaded) {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.display = 'none';
+        }
+      }
+    }
+
+    async function ensureFontsLoaded() {
+      try {
+        await document.fonts.ready;
+        const fontPromises = [
+          document.fonts.load("400 16px 'Poppins'"),
+          document.fonts.load("500 16px 'Poppins'"),
+          document.fonts.load("600 16px 'Poppins'"),
+          document.fonts.load("bold 18px 'Poppins'"),
+          document.fonts.load("bold 28px 'Poppins'")
+        ];
+        await Promise.all(fontPromises);
+        const testCanvas = document.createElement('canvas');
+        const testContext = testCanvas.getContext('2d');
+        testContext.font = "16px 'Poppins'";
+        const testText = testContext.measureText('Test');
+        if (testText.width === 0) {
+          throw new Error('Font verification failed');
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+        loadingState.fontsLoaded = true;
+        checkLoadingComplete();
+        return true;
+      } catch (error) {
+        console.warn('Font loading failed, proceeding with fallback fonts:', error);
+        loadingState.fontsLoaded = true;
+        checkLoadingComplete();
+        return false;
+      }
+    }
+
+    async function initializeGame() {
+      try {
+        await ensureFontsLoaded();
+        await new Promise(resolve => setTimeout(resolve, 50));
+        init();
+        loadingState.gameInitialized = true;
+        checkLoadingComplete();
+      } catch (error) {
+        setTimeout(() => {
+          initializeGame();
+        }, 1000);
+      }
+    }
+
+    function init() {
+      crosshairElement = document.getElementById('crosshair');
+
+      const savedShiftLock = localStorage.getItem('shiftLockEnabled');
+      isShiftLockEnabled = savedShiftLock === 'true';
+      updateShiftLockUI();
+
+      updateFullscreenToggle();
+
+      scene = new THREE.Scene();
+
+      // Enhanced fog with color variation
+      scene.fog = new THREE.Fog(0xB8D4E3, 40, 150);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 5, 15);
+
+      // Use powerPreference for maximum performance in Chrome
+      webglRenderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      webglRenderer.setSize(window.innerWidth, window.innerHeight);
+      webglRenderer.setPixelRatio(window.devicePixelRatio);
+      webglRenderer.shadowMap.enabled = true;
+      webglRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      canvas = webglRenderer.domElement;
+      canvas.tabIndex = 0;
+      canvas.style.outline = 'none';
+      document.body.appendChild(canvas);
+      setCursor('default-cursor');
+
+      // Enhanced ambient lighting with subtle color variation
+      const ambientLight = new THREE.AmbientLight(0xB8D4E3, 0.4);
+      scene.add(ambientLight);
+
+      // Main sun light
+      directionalLight = new THREE.DirectionalLight(0xFFE4AA, 1.8);
+      directionalLight.position.set(25, 35, -15);
+      directionalLight.castShadow = true;
+      directionalLight.shadow.mapSize.width = 4096;
+      directionalLight.shadow.mapSize.height = 4096;
+      directionalLight.shadow.camera.near = 0.5;
+      directionalLight.shadow.camera.far = 200;
+      directionalLight.shadow.camera.left = -60;
+      directionalLight.shadow.camera.right = 60;
+      directionalLight.shadow.camera.top = 60;
+      directionalLight.shadow.camera.bottom = -60;
+      directionalLight.shadow.bias = -0.0001;
+      directionalLight.shadow.radius = 3;
+      scene.add(directionalLight);
+
+      // Secondary fill light for better illumination
+      const fillLight = new THREE.DirectionalLight(0xB8D4E3, 0.3);
+      fillLight.position.set(-15, 10, 10);
+      scene.add(fillLight);
+
+      // Hemisphere light for realistic sky illumination
+      const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x4a8f4a, 0.6);
+      scene.add(hemisphereLight);
+
+      // Create sky first (includes shaders)
+      createDynamicSky();
+      
+      // Create clouds
+      createInfiniteChunkedClouds();
+      
+      // Create ground and grass
+      createUnlimitedGround();
+
+      localPlayerAvatarData = createAvatarInstance();
+      localPlayerAvatarGroup = localPlayerAvatarData.group;
+      localPlayerAvatarData.velocityY = 0;
+      localPlayerAvatarData.isGrounded = true;
+      localPlayerAvatarData.wantsToJump = false;
+      localPlayerAvatarData.walkPhase = 0;
+      localPlayerAvatarData.chatBubbles = [];
+      localPlayerAvatarData.usernameSprite = null;
+      localPlayerAvatarData.lastJumpTime = 0;
+      localPlayerAvatarData.currentEmote = null;
+      localPlayerAvatarData.emoteStartTime = 0;
+      localPlayerAvatarData.emotePhase = 0;
+      localPlayerAvatarData.jumpState = 'grounded';
+      localPlayerAvatarData.jumpStartTime = 0;
+      localPlayerAvatarData.originalScale = new THREE.Vector3(1, 1, 1);
+      localPlayerAvatarData.landingSquash = 0;
+      scene.add(localPlayerAvatarGroup);
+      updateCameraTarget();
+
+      settingsToggleIcon = document.getElementById('settings-toggle-icon');
+      settingsMenu = document.getElementById('settings-menu');
+      settingsCloseBtn = settingsMenu.querySelector('.settings-close');
+
+      healthToggleIcon = document.getElementById('health-toggle-icon');
+      healthBarContainer = document.getElementById('health-bar-container');
+      healthFill = document.getElementById('health-fill');
+      healthText = document.getElementById('health-text');
+
+      // Load health mode state from localStorage
+      const savedHealthMode = localStorage.getItem('healthModeEnabled');
+      isHealthModeEnabled = savedHealthMode === 'true';
+      
+      const savedHealth = localStorage.getItem('currentHealth');
+      if (savedHealth !== null) {
+        currentHealth = parseInt(savedHealth);
+      }
+      
+      updateHealthModeUI();
+      updateHealthBar();
+
+      chatToggleIcon = document.getElementById('chat-toggle-icon');
+      chatWindow = document.getElementById('chat-window');
+      chatLog = document.getElementById('chat-log');
+      chatInput = document.getElementById('chat-input');
+
+      chatWindow.style.display = isChatVisible ? 'flex' : 'none';
+
+      chatToggleIcon.addEventListener('click', () => {
+        isChatVisible = !isChatVisible;
+        chatWindow.style.display = isChatVisible ? 'flex' : 'none';
+      });
+
+      chatInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          const message = chatInput.value.trim();
+          if (message && message.length <= 64 && socket && socket.readyState === WebSocket.OPEN) {
+            if (message.startsWith('/e ')) {
+              const emoteCommand = message.substring(3).toLowerCase();
+              if (emoteCommand === 'wave' || emoteCommand === 'dance') {
+                const emoteData = { type: 'emote_command', emote: emoteCommand, timestamp: Date.now() };
+                socket.send(JSON.stringify(emoteData));
+              } else {
+                addMessageToLog("System", `Unknown emote: ${emoteCommand}. Available emotes: wave, dance`);
+              }
+            } else {
+              const chatData = { type: 'chat_message', message: message, timestamp: Date.now() };
+              socket.send(JSON.stringify(chatData));
+            }
+            chatInput.value = '';
+            chatInput.blur();
+            isChatInputFocused = false;
+            canvas.focus();
+            setTimeout(() => {
+              canvas.focus();
+            }, 50);
+          } else if (message.length > 64) {
+            addMessageToLog("System", "Message too long! Maximum 64 characters allowed.");
+          }
+        }
+      });
+
+      chatInput.addEventListener('focus', () => { isChatInputFocused = true; });
+      chatInput.addEventListener('blur', () => {
+        isChatInputFocused = false;
+        setTimeout(() => {
+          canvas.focus();
+        }, 10);
+      });
+
+      healthToggleIcon.addEventListener('click', () => {
+        toggleHealthMode();
+      });
+
+      const settingsBackdrop = document.getElementById('settings-backdrop');
+
+      settingsToggleIcon.addEventListener('click', () => {
+        isSettingsVisible = !isSettingsVisible;
+        if (isSettingsVisible) {
+          settingsMenu.classList.add('visible');
+          settingsBackdrop.classList.add('visible');
+          updatePeopleTab();
+        } else {
+          settingsMenu.classList.remove('visible');
+          settingsBackdrop.classList.remove('visible');
+        }
+      });
+
+      settingsCloseBtn.addEventListener('click', () => {
+        isSettingsVisible = false;
+        settingsMenu.classList.remove('visible');
+        settingsBackdrop.classList.remove('visible');
+      });
+
+      settingsBackdrop.addEventListener('click', () => {
+        isSettingsVisible = false;
+        settingsMenu.classList.remove('visible');
+        settingsBackdrop.classList.remove('visible');
+      });
+
+      const shiftLockArrows = document.querySelectorAll('.setting-item .nav-arrows');
+      if (shiftLockArrows.length > 0) {
+        const shiftLockControls = shiftLockArrows[0];
+        const leftArrow = shiftLockControls.querySelector('.arrow-btn:first-child');
+        const rightArrow = shiftLockControls.querySelector('.arrow-btn:last-child');
+
+        leftArrow.addEventListener('click', () => {
+          toggleShiftLock();
+        });
+
+        rightArrow.addEventListener('click', () => {
+          toggleShiftLock();
+        });
+      }
+
+      document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+          tab.classList.add('active');
+
+          const tabId = tab.getAttribute('data-tab') + '-tab';
+          document.getElementById(tabId).classList.add('active');
+
+          if (tab.getAttribute('data-tab') === 'people') {
+            updatePeopleTab();
+          }
+        });
+      });
+
+      document.querySelectorAll('.toggle-switch').forEach(toggle => {
+        const setting = toggle.getAttribute('data-setting');
+
+        if (setting === 'fullscreen') {
+          toggle.addEventListener('click', () => {
+            toggleFullscreen();
+          });
+        } else {
+          toggle.addEventListener('click', () => {
+            toggle.classList.toggle('active');
+          });
+        }
+      });
+
+      document.querySelector('.bottom-action-btn.resume').addEventListener('click', () => {
+        isSettingsVisible = false;
+        settingsMenu.classList.remove('visible');
+        document.getElementById('settings-backdrop').classList.remove('visible');
+      });
+
+      document.querySelector('.bottom-action-btn.leave').addEventListener('click', () => {
+        if (confirm('Are you sure you want to leave the game?')) {
+          if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.close();
+          }
+          document.body.innerHTML = '';
+          document.body.style.backgroundColor = '#000000';
+          document.body.style.margin = '0';
+          document.body.style.padding = '0';
+          document.body.style.overflow = 'hidden';
+        }
+      });
+
+      document.querySelector('.bottom-action-btn.respawn').addEventListener('click', () => {
+        if (confirm("Are you sure you want to respawn?")) {
+          if (isHealthModeEnabled) {
+            currentHealth = 0;
+            updateHealthBar();
+            triggerDeath();
+          } else {
+            // Instant respawn if health mode is disabled
+            if (localPlayerAvatarGroup && localPlayerAvatarData) {
+              localPlayerAvatarGroup.position.set(0, 0, 0);
+              localPlayerAvatarData.velocityY = 0;
+              localPlayerAvatarData.isGrounded = true;
+            }
+          }
+          isSettingsVisible = false;
+          settingsMenu.classList.remove('visible');
+          document.getElementById('settings-backdrop').classList.remove('visible');
+        }
+      });
+
+      playerListUI = document.getElementById('player-list-ui');
+      playerListCloseIcon = document.getElementById('player-list-close-icon');
+      playerListBody = document.getElementById('player-list-body');
+
+      if (playerListCloseIcon) {
+        playerListCloseIcon.addEventListener('click', () => {
+          if (playerListUI) playerListUI.classList.add('hidden');
+        });
+      }
+      updatePlayerListUI();
+
+      document.addEventListener('keydown', onKeyDown);
+      document.addEventListener('keyup', onKeyUp);
+      canvas.addEventListener('mousedown', onMouseDown);
+      document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener('mousemove', onMouseMove);
+      canvas.addEventListener('wheel', onMouseWheel);
+      canvas.addEventListener('contextmenu', (event) => event.preventDefault());
+      window.addEventListener('resize', onWindowResize, false);
+
+      document.addEventListener('pointerlockchange', onPointerLockChange, false);
+      document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
+
+      document.addEventListener('fullscreenchange', updateFullscreenToggle, false);
+      document.addEventListener('webkitfullscreenchange', updateFullscreenToggle, false);
+      document.addEventListener('msfullscreenchange', updateFullscreenToggle, false);
+
+      connectWebSocket();
+      animate();
+    }
+
+    let cloudGroup;
+    let cloudInstances = [];
+    let skyDome;
+    let skyUniforms;
+
+    function createDynamicSky() {
+      const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+      const skyVertexShader = `
+                varying vec3 vWorldPosition;
+                void main() {
+                    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                    vWorldPosition = worldPosition.xyz;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `;
+      const skyFragmentShader = `
+                uniform vec3 topColor;
+                uniform vec3 bottomColor;
+                uniform vec3 sunColor;
+                uniform vec3 sunPosition;
+                uniform float offset;
+                uniform float exponent;
+                uniform float sunIntensity;
+                
+                varying vec3 vWorldPosition;
+                
+                void main() {
+                    float h = normalize(vWorldPosition + offset).y;
+                    vec3 skyColor = mix(bottomColor, topColor, max(pow(max(h, 0.0), exponent), 0.0));
+                    vec3 sunDir = normalize(sunPosition);
+                    vec3 viewDir = normalize(vWorldPosition);
+                    float sunProximity = max(dot(viewDir, sunDir), 0.0);
+                    float sunGlow = pow(sunProximity, 8.0) * sunIntensity;
+                    skyColor = mix(skyColor, sunColor, sunGlow);
+                    float horizonGlow = 1.0 - abs(h);
+                    horizonGlow = pow(horizonGlow, 3.0) * 0.3;
+                    skyColor = mix(skyColor, vec3(1.0, 0.8, 0.6), horizonGlow);
+                    gl_FragColor = vec4(skyColor, 1.0);
+                }
+            `;
+      skyUniforms = {
+        topColor: { value: new THREE.Color(0x4A90E2) },
+        bottomColor: { value: new THREE.Color(0xE6F3FF) },
+        sunColor: { value: new THREE.Color(0xFFE4B5) },
+        sunPosition: { value: new THREE.Vector3(25, 35, -15).normalize() },
+        offset: { value: 0 },
+        exponent: { value: 0.6 },
+        sunIntensity: { value: 0.4 }
+      };
+      const skyMaterial = new THREE.ShaderMaterial({
+        uniforms: skyUniforms,
+        vertexShader: skyVertexShader,
+        fragmentShader: skyFragmentShader,
+        side: THREE.BackSide,
+        fog: false
+      });
+      skyDome = new THREE.Mesh(skyGeometry, skyMaterial);
+      scene.add(skyDome);
+      
+      // Mark shaders as loaded
+      loadingState.shadersLoaded = true;
+      checkLoadingComplete();
+    }
+
+    
+
+    function createInfiniteChunkedClouds() {
+      cloudGroup = new THREE.Group();
+      cloudInstances = [];
+      scene.add(cloudGroup);
+      
+      // Mark clouds as initialized
+      loadingState.cloudsInitialized = true;
+      checkLoadingComplete();
+    }
+    
+    function getChunkKey(x, z) {
+      return `${Math.floor(x / CHUNK_SIZE)}_${Math.floor(z / CHUNK_SIZE)}`;
+    }
+    
+    function createCloudChunk(chunkX, chunkZ) {
+      const chunkKey = `${chunkX}_${chunkZ}`;
+      if (cloudChunks.has(chunkKey)) return;
+      
+      const chunkGroup = new THREE.Group();
+      const cloudData = [];
+      
+      // Deterministic random based on chunk coordinates
+      const seed = chunkX * 1000 + chunkZ;
+      Math.seedrandom = function(seed) {
+        let x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+      };
+      
+      for (let i = 0; i < MAX_CLOUDS_PER_CHUNK; i++) {
+        const cloudFormation = new THREE.Group();
+        
+        // Use deterministic positioning within chunk
+        const localX = (Math.seedrandom(seed + i * 100) - 0.5) * CHUNK_SIZE * 0.8;
+        const localZ = (Math.seedrandom(seed + i * 101) - 0.5) * CHUNK_SIZE * 0.8;
+        const worldX = chunkX * CHUNK_SIZE + localX;
+        const worldZ = chunkZ * CHUNK_SIZE + localZ;
+        const y = 25 + Math.seedrandom(seed + i * 102) * 15;
+        
+        cloudFormation.position.set(worldX, y, worldZ);
+        
+        const blobCount = 3 + Math.floor(Math.seedrandom(seed + i * 103) * 4);
+        for (let j = 0; j < blobCount; j++) {
+          const blobRadius = 3 + Math.seedrandom(seed + i * 104 + j) * 4;
+          const blobGeometry = new THREE.SphereGeometry(blobRadius, 12, 8);
+          const cloudMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.85,
+            roughness: 1.0,
+            metalness: 0.0,
+            fog: false,
+            envMapIntensity: 0.5
+          });
+          const cloudBlob = new THREE.Mesh(blobGeometry, cloudMaterial);
+          const blobX = (Math.seedrandom(seed + i * 105 + j) - 0.5) * 12;
+          const blobY = (Math.seedrandom(seed + i * 106 + j) - 0.5) * 4;
+          const blobZ = (Math.seedrandom(seed + i * 107 + j) - 0.5) * 8;
+          cloudBlob.position.set(blobX, blobY, blobZ);
+          cloudFormation.add(cloudBlob);
+        }
+        
+        cloudFormation.userData = {
+          originalPosition: cloudFormation.position.clone(),
+          driftSpeed: 0.5 + Math.seedrandom(seed + i * 108) * 0.3,
+          bobSpeed: 0.8 + Math.seedrandom(seed + i * 109) * 0.4,
+          bobAmplitude: 1 + Math.seedrandom(seed + i * 110) * 1.5,
+          phaseOffset: Math.seedrandom(seed + i * 111) * Math.PI * 2
+        };
+        
+        chunkGroup.add(cloudFormation);
+        cloudData.push(cloudFormation);
+      }
+      
+      cloudGroup.add(chunkGroup);
+      cloudChunks.set(chunkKey, { group: chunkGroup, clouds: cloudData, visible: true });
+    }
+    
+    function createGrassChunk(chunkX, chunkZ) {
+      const chunkKey = `${chunkX}_${chunkZ}`;
+      if (grassChunks.has(chunkKey)) return;
+      
+      const grassGeometry = new THREE.ConeGeometry(0.02, 0.3, 3);
+      grassGeometry.translate(0, 0.15, 0);
+      
+      const baseMaterial = new THREE.MeshStandardMaterial({ roughness: 0.8, metalness: 0, vertexColors: true });
+      const instancedMesh = new THREE.InstancedMesh(grassGeometry, baseMaterial, MAX_GRASS_PER_CHUNK);
+      instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      
+      const grassParams = [];
+      const dummy = _dummyObject;
+      
+      // Deterministic random based on chunk coordinates
+      const seed = chunkX * 1000 + chunkZ;
+      
+      for (let i = 0; i < MAX_GRASS_PER_CHUNK; i++) {
+        const localX = (Math.seedrandom(seed + i * 200) - 0.5) * CHUNK_SIZE;
+        const localZ = (Math.seedrandom(seed + i * 201) - 0.5) * CHUNK_SIZE;
+        const worldX = chunkX * CHUNK_SIZE + localX;
+        const worldZ = chunkZ * CHUNK_SIZE + localZ;
+        const scale = 0.8 + Math.seedrandom(seed + i * 202) * 0.4;
+        
+        dummy.position.set(worldX, 0, worldZ);
+        dummy.rotation.y = Math.seedrandom(seed + i * 203) * Math.PI * 2;
+        dummy.rotation.z = Math.seedrandom(seed + i * 204) * Math.PI * 2 * 0.05;
+        dummy.rotation.x = 0;
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        instancedMesh.setMatrixAt(i, dummy.matrix);
+        
+        grassParams.push({
+          windOffset: Math.seedrandom(seed + i * 205) * Math.PI * 2,
+          windStrength: 0.1 + Math.seedrandom(seed + i * 206) * 0.1,
+          initialRotationX: 0,
+          initialRotationY: dummy.rotation.y,
+          initialRotationZ: dummy.rotation.z,
+          scale: scale,
+          position: { x: worldX, y: 0, z: worldZ }
+        });
+      }
+      
+      // Set per-instance colors
+      const grassMaterials = [
+        new THREE.Color(0x2d5a2d),
+        new THREE.Color(0x3c7a3c),
+        new THREE.Color(0x4a8f4a),
+        new THREE.Color(0x1e4a1e)
+      ];
+      const instanceColors = new Float32Array(MAX_GRASS_PER_CHUNK * 3);
+      for (let i = 0; i < MAX_GRASS_PER_CHUNK; i++) {
+        const colorChoice = grassMaterials[Math.floor(Math.seedrandom(seed + i * 207) * grassMaterials.length)];
+        instanceColors[i * 3] = colorChoice.r;
+        instanceColors[i * 3 + 1] = colorChoice.g;
+        instanceColors[i * 3 + 2] = colorChoice.b;
+      }
+      instancedMesh.instanceColor = new THREE.InstancedBufferAttribute(instanceColors, 3);
+      
+      scene.add(instancedMesh);
+      grassChunks.set(chunkKey, { 
+        mesh: instancedMesh, 
+        params: grassParams, 
+        visible: true,
+        chunkX: chunkX,
+        chunkZ: chunkZ
+      });
+    }
+
+    
+
+    function updateSky(elapsedTime) {
+      if (!skyUniforms) return;
+      const time = elapsedTime * 0.1;
+      const topColorVariation = 0.1 + Math.sin(time) * 0.05;
+      skyUniforms.topColor.value.setHSL(0.6, 0.8, 0.4 + topColorVariation);
+      const bottomColorVariation = 0.1 + Math.sin(time * 0.7) * 0.05;
+      skyUniforms.bottomColor.value.setHSL(0.6, 0.3, 0.85 + bottomColorVariation);
+      skyUniforms.sunIntensity.value = 0.35 + Math.sin(time * 1.2) * 0.1;
+    }
+
+    
+
+    function createUnlimitedGround() {
+      const groundGeometry = new THREE.PlaneGeometry(4000, 4000);
+      const groundMaterial = new THREE.MeshStandardMaterial({
+        color: 0x4a8f4a,
+        roughness: 0.85,
+        metalness: 0.0,
+        envMapIntensity: 0.3
+      });
+      ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      ground.position.y = -0.01;
+      scene.add(ground);
+      createInfiniteGrass();
+    }
+
+    // Math.seedrandom implementation for deterministic random
+    Math.seedrandom = function(seed) {
+      let x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    };
+    
+    function createInfiniteGrass() {
+      // Initialize with chunks around spawn
+      updateWorldChunks(0, 0);
+      
+      // Mark grass as initialized
+      loadingState.grassInitialized = true;
+      checkLoadingComplete();
+    }
+
+    function updateFrustumCulling() {
+      cameraMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+      frustum.setFromProjectionMatrix(cameraMatrix);
+    }
+    
+    function isChunkInFrustum(chunkX, chunkZ) {
+      _chunkCenter.set(chunkX * CHUNK_SIZE, 0, chunkZ * CHUNK_SIZE);
+      _chunkBounds.setFromCenterAndSize(_chunkCenter, new THREE.Vector3(CHUNK_SIZE, 100, CHUNK_SIZE));
+      return frustum.intersectsBox(_chunkBounds);
+    }
+    
+    function updateWorldChunks(playerX, playerZ) {
+      const playerChunkX = Math.floor(playerX / CHUNK_SIZE);
+      const playerChunkZ = Math.floor(playerZ / CHUNK_SIZE);
+      
+      if (playerChunkX === lastPlayerChunkX && playerChunkZ === lastPlayerChunkZ) return;
+      
+      lastPlayerChunkX = playerChunkX;
+      lastPlayerChunkZ = playerChunkZ;
+      
+      const renderChunks = Math.ceil(RENDER_DISTANCE / CHUNK_SIZE);
+      
+      // Create new chunks in render distance
+      for (let x = playerChunkX - renderChunks; x <= playerChunkX + renderChunks; x++) {
+        for (let z = playerChunkZ - renderChunks; z <= playerChunkZ + renderChunks; z++) {
+          const distance = Math.sqrt((x - playerChunkX) ** 2 + (z - playerChunkZ) ** 2) * CHUNK_SIZE;
+          if (distance <= RENDER_DISTANCE) {
+            createGrassChunk(x, z);
+            createCloudChunk(x, z);
+          }
+        }
+      }
+      
+      // Remove distant chunks
+      grassChunks.forEach((chunk, key) => {
+        const [chunkX, chunkZ] = key.split('_').map(Number);
+        const distance = Math.sqrt((chunkX - playerChunkX) ** 2 + (chunkZ - playerChunkZ) ** 2) * CHUNK_SIZE;
+        if (distance > RENDER_DISTANCE + CHUNK_SIZE) {
+          scene.remove(chunk.mesh);
+          chunk.mesh.dispose();
+          grassChunks.delete(key);
+        }
+      });
+      
+      cloudChunks.forEach((chunk, key) => {
+        const [chunkX, chunkZ] = key.split('_').map(Number);
+        const distance = Math.sqrt((chunkX - playerChunkX) ** 2 + (chunkZ - playerChunkZ) ** 2) * CHUNK_SIZE;
+        if (distance > RENDER_DISTANCE + CHUNK_SIZE) {
+          cloudGroup.remove(chunk.group);
+          chunk.group.traverse(obj => {
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) obj.material.dispose();
+          });
+          cloudChunks.delete(key);
+        }
+      });
+    }
+    
+    function updateGrassAnimation(deltaTime) {
+      windTime += deltaTime;
+      const dummy = _dummyObject;
+      
+      grassChunks.forEach(chunk => {
+        if (!chunk.visible) return;
+        
+        const count = chunk.params.length;
+        for (let i = 0; i < count; i++) {
+          const params = chunk.params[i];
+          const windX = Math.sin(windTime * 2 + params.windOffset) * params.windStrength * 0.3;
+          const windZ = Math.cos(windTime * 1.5 + params.windOffset * 0.7) * params.windStrength * 0.2;
+          
+          dummy.position.set(params.position.x, 0, params.position.z);
+          dummy.rotation.x = params.initialRotationX + windX;
+          dummy.rotation.y = params.initialRotationY;
+          dummy.rotation.z = params.initialRotationZ + windZ;
+          dummy.scale.set(params.scale, params.scale, params.scale);
+          dummy.updateMatrix();
+          chunk.mesh.setMatrixAt(i, dummy.matrix);
+        }
+        chunk.mesh.instanceMatrix.needsUpdate = true;
+      });
+    }
+    
+    function updateCloudAnimation(deltaTime, elapsedTime) {
+      cloudChunks.forEach(chunk => {
+        if (!chunk.visible) return;
+        
+        chunk.clouds.forEach(cloudFormation => {
+          const userData = cloudFormation.userData;
+          const time = elapsedTime;
+          const driftX = Math.sin(time * userData.driftSpeed * 0.1 + userData.phaseOffset) * 2;
+          const driftZ = Math.cos(time * userData.driftSpeed * 0.15 + userData.phaseOffset) * 1.5;
+          const bobY = Math.sin(time * userData.bobSpeed + userData.phaseOffset) * userData.bobAmplitude;
+          
+          cloudFormation.position.set(
+            userData.originalPosition.x + driftX,
+            userData.originalPosition.y + bobY,
+            userData.originalPosition.z + driftZ
+          );
+          cloudFormation.rotation.y += deltaTime * 0.02 * userData.driftSpeed;
+        });
+      });
+    }
+    
+    function performFrustumCulling() {
+      updateFrustumCulling();
+      
+      // Cull grass chunks
+      grassChunks.forEach(chunk => {
+        const inFrustum = isChunkInFrustum(chunk.chunkX, chunk.chunkZ);
+        if (chunk.visible !== inFrustum) {
+          chunk.visible = inFrustum;
+          chunk.mesh.visible = inFrustum;
+        }
+      });
+      
+      // Cull cloud chunks
+      cloudChunks.forEach((chunk, key) => {
+        const [chunkX, chunkZ] = key.split('_').map(Number);
+        const inFrustum = isChunkInFrustum(chunkX, chunkZ);
+        if (chunk.visible !== inFrustum) {
+          chunk.visible = inFrustum;
+          chunk.group.visible = inFrustum;
+        }
+      });
+    }
+
+    function updateDynamicShadows() {
+      if (!localPlayerAvatarGroup || !directionalLight) return;
+      const avatarPos = localPlayerAvatarGroup.position;
+      const shadowSize = 25; // This could be adjusted based on camera distance for optimization
+      directionalLight.shadow.camera.left = -shadowSize;
+      directionalLight.shadow.camera.right = shadowSize;
+      directionalLight.shadow.camera.top = shadowSize;
+      directionalLight.shadow.camera.bottom = -shadowSize;
+      // OPTIMIZATION: Use pre-defined offset vector
+      directionalLight.position.copy(avatarPos).add(_lightPositionOffset);
+      directionalLight.target.position.copy(avatarPos);
+      directionalLight.target.updateMatrixWorld(); // Necessary for the target to take effect
+      directionalLight.shadow.camera.updateProjectionMatrix();
+    }
+
+    function getAvatarUsername(id) {
+      return `Player ${id.substring(0, 6)}`;
+    }
+
+    function getPlayerListDisplayName(id, isLocal = false) {
+      if (isLocal) {
+        return "You";
+      }
+      return `Player ${id.substring(0, 6)}`;
+    }
+
+    function createUsernameSprite(username, headMesh) {
+      const canvasEl = document.createElement('canvas');
+      const context = canvasEl.getContext('2d');
+      const font = "bold 28px 'Poppins', sans-serif";
+      context.font = font;
+      const textMetrics = context.measureText(username);
+      const textWidth = textMetrics.width;
+      const textHeight = 28;
+      const padding = 5;
+      const spriteWidth = textWidth + padding * 2;
+      const spriteHeight = textHeight + padding * 2;
+      canvasEl.width = THREE.MathUtils.ceilPowerOfTwo(spriteWidth);
+      canvasEl.height = THREE.MathUtils.ceilPowerOfTwo(spriteHeight);
+      context.font = font;
+      context.fillStyle = 'white';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(username, canvasEl.width / 2, canvasEl.height / 2);
+      const texture = new THREE.CanvasTexture(canvasEl);
+      texture.needsUpdate = true;
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(canvasEl.width / 40, canvasEl.height / 40, 1.0);
+      const headActualHeight = headMesh.geometry.parameters.height || HEAD_SIZE_CONST;
+      const headTopYInGroup = headMesh.position.y + (headActualHeight / 2);
+      sprite.position.set(0, headTopYInGroup + 0.7 + (sprite.scale.y / 2), 0);
+      return sprite;
+    }
+
+    function updateAvatarUsername(playerData, username) {
+      if (!playerData || !playerData.group || !playerData.head) return;
+      if (playerData.usernameSprite) {
+        playerData.group.remove(playerData.usernameSprite);
+        if (playerData.usernameSprite.material.map) playerData.usernameSprite.material.map.dispose();
+        playerData.usernameSprite.material.dispose();
+        playerData.usernameSprite = null;
+      }
+      playerData.usernameSprite = createUsernameSprite(username, playerData.head);
+      playerData.group.add(playerData.usernameSprite);
+    }
+
+    function createAvatarInstance(username = null) {
+      const avatarInstanceGroup = new THREE.Group();
+      const headMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFD700,
+        roughness: 0.4,
+        metalness: 0.02,
+        envMapIntensity: 0.8
+      });
+      const torsoMaterial = new THREE.MeshStandardMaterial({
+        color: 0x0066CC,
+        roughness: 0.5,
+        metalness: 0.02,
+        envMapIntensity: 0.8
+      });
+      const armMaterial = new THREE.MeshStandardMaterial({
+        color: 0xFFD700,
+        roughness: 0.4,
+        metalness: 0.02,
+        envMapIntensity: 0.8
+      });
+      const legMaterial = new THREE.MeshStandardMaterial({
+        color: 0x228B22,
+        roughness: 0.5,
+        metalness: 0.02,
+        envMapIntensity: 0.8
+      });
+      const headSize = HEAD_SIZE_CONST;
+      const torsoWidth = 1.0, torsoHeight = 1.3, torsoDepth = 0.5;
+      const armWidth = 0.45, armHeight = 1.2, armDepth = 0.45;
+      const legWidth = 0.5, legHeight = 1.2, legDepth = 0.5;
+      const avatarBaseY = 0;
+      const cornerRadius = 0.06, segmentCount = 4;
+      const headGeo = new RoundedBoxGeometry(headSize, headSize, headSize, segmentCount, cornerRadius);
+      const headMesh = new THREE.Mesh(headGeo, headMaterial);
+      headMesh.position.y = avatarBaseY + legHeight + torsoHeight + (headSize / 2);
+      headMesh.castShadow = true;
+      headMesh.receiveShadow = true;
+      avatarInstanceGroup.add(headMesh);
+      const faceMat = new THREE.MeshBasicMaterial({ color: 0x111111, side: THREE.DoubleSide });
+      const eyeWidth = 0.18, eyeHeight = 0.22;
+      const eyeCornerRadius = 0.04;
+      const eyeGeo = new RoundedBoxGeometry(eyeWidth, eyeHeight, 0.001, 4, eyeCornerRadius);
+      const faceOffsetZ = headSize / 2 + 0.001;
+      const leftEye = new THREE.Mesh(eyeGeo, faceMat);
+      leftEye.position.set(-headSize * 0.22, headMesh.position.y + headSize * 0.1, faceOffsetZ);
+      avatarInstanceGroup.add(leftEye);
+      const rightEye = new THREE.Mesh(eyeGeo, faceMat);
+      rightEye.position.set(headSize * 0.22, headMesh.position.y + headSize * 0.1, faceOffsetZ);
+      avatarInstanceGroup.add(rightEye);
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-headSize * 0.25, -headSize * 0.2, 0),
+        new THREE.Vector3(0, -headSize * 0.3, 0),
+        new THREE.Vector3(headSize * 0.25, -headSize * 0.2, 0)
+      ]);
+      const smileGeo = new THREE.TubeGeometry(curve, 10, 0.02, 5, false);
+      const smile = new THREE.Mesh(smileGeo, faceMat);
+      smile.position.set(0, headMesh.position.y, faceOffsetZ);
+      avatarInstanceGroup.add(smile);
+      const torsoGeo = new RoundedBoxGeometry(torsoWidth, torsoHeight, torsoDepth, segmentCount, cornerRadius);
+      const torsoMesh = new THREE.Mesh(torsoGeo, torsoMaterial);
+      torsoMesh.position.y = avatarBaseY + legHeight + (torsoHeight / 2);
+      torsoMesh.castShadow = true;
+      torsoMesh.receiveShadow = true;
+      avatarInstanceGroup.add(torsoMesh);
+      const armGeo = new RoundedBoxGeometry(armWidth, armHeight, armDepth, segmentCount, cornerRadius);
+      armGeo.translate(0, -armHeight / 2, 0);
+      const leftArmMesh = new THREE.Mesh(armGeo, armMaterial);
+      leftArmMesh.position.set(-(torsoWidth / 2 + armWidth / 2), avatarBaseY + legHeight + torsoHeight, 0);
+      leftArmMesh.castShadow = true;
+      leftArmMesh.receiveShadow = true;
+      avatarInstanceGroup.add(leftArmMesh);
+      const rightArmMesh = new THREE.Mesh(armGeo, armMaterial);
+      rightArmMesh.position.set((torsoWidth / 2 + armWidth / 2), avatarBaseY + legHeight + torsoHeight, 0);
+      rightArmMesh.castShadow = true;
+      rightArmMesh.receiveShadow = true;
+      avatarInstanceGroup.add(rightArmMesh);
+      const legGeo = new RoundedBoxGeometry(legWidth, legHeight, legDepth, segmentCount, cornerRadius);
+      legGeo.translate(0, -legHeight / 2, 0);
+      const leftLegMesh = new THREE.Mesh(legGeo, legMaterial);
+      leftLegMesh.position.set(-(torsoWidth / 2 - legWidth / 2), avatarBaseY + legHeight, 0);
+      leftLegMesh.castShadow = true;
+      leftLegMesh.receiveShadow = true;
+      avatarInstanceGroup.add(leftLegMesh);
+      const rightLegMesh = new THREE.Mesh(legGeo, legMaterial);
+      rightLegMesh.position.set((torsoWidth / 2 - legWidth / 2), avatarBaseY + legHeight, 0);
+      rightLegMesh.castShadow = true;
+      rightLegMesh.receiveShadow = true;
+      avatarInstanceGroup.add(rightLegMesh);
+      avatarInstanceGroup.position.y = 0.0;
+      avatarInstanceGroup.position.z = 0;
+      const avatarData = {
+        group: avatarInstanceGroup,
+        head: headMesh,
+        torso: torsoMesh,
+        leftLeg: leftLegMesh,
+        rightLeg: rightLegMesh,
+        leftArm: leftArmMesh,
+        rightArm: rightArmMesh
+      };
+      if (username) {
+        avatarData.usernameSprite = createUsernameSprite(username, headMesh);
+        avatarInstanceGroup.add(avatarData.usernameSprite);
+      }
+      return avatarData;
+    }
+
+    function onKeyDown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        isSettingsVisible = !isSettingsVisible;
+        if (isSettingsVisible) {
+          settingsMenu.classList.add('visible');
+          document.getElementById('settings-backdrop').classList.add('visible');
+          updatePeopleTab();
+        } else {
+          settingsMenu.classList.remove('visible');
+          document.getElementById('settings-backdrop').classList.remove('visible');
+        }
+        return;
+      }
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        if (playerListUI) {
+          const isCurrentlyHidden = playerListUI.classList.contains('hidden');
+          if (isCurrentlyHidden) {
+            playerListUI.classList.remove('hidden');
+          } else {
+            playerListUI.classList.add('hidden');
+          }
+        }
+        return;
+      }
+      if (event.key === '/') {
+        if (!isChatInputFocused) {
+          event.preventDefault();
+          if (chatInput) chatInput.focus();
+        }
+        return;
+      }
+
+      if (!isChatInputFocused && isShiftLockEnabled && (event.key === 'Shift' || event.code === 'ShiftLeft' || event.code === 'ShiftRight')) {
+        event.preventDefault();
+        toggleShiftLockActive();
+        return;
+      }
+
+      if (isChatInputFocused) return;
+      if (event.repeat && ['KeyW', 'KeyS', 'KeyA', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(event.code) === -1) return;
+
+      switch (event.code) {
+        case 'KeyW': case 'ArrowUp': moveState.forward = true; break;
+        case 'KeyS': case 'ArrowDown': moveState.backward = true; break;
+        case 'KeyA': moveState.left = true; break;
+        case 'KeyD': moveState.right = true; break;
+        case 'ArrowLeft': moveState.cameraLeft = true; break;
+        case 'ArrowRight': moveState.cameraRight = true; break;
+        case 'Space':
+          event.preventDefault();
+          moveState.jump = true;
+          break;
+      }
+    }
+
+    function onKeyUp(event) {
+      if (isChatInputFocused && event.code !== 'Enter' && event.code !== 'Escape') return;
+      switch (event.code) {
+        case 'KeyW': case 'ArrowUp': moveState.forward = false; break;
+        case 'KeyS': case 'ArrowDown': moveState.backward = false; break;
+        case 'KeyA': moveState.left = false; break;
+        case 'KeyD': moveState.right = false; break;
+        case 'ArrowLeft': moveState.cameraLeft = false; break;
+        case 'ArrowRight': moveState.cameraRight = false; break;
+        case 'Space':
+          moveState.jump = false;
+          break;
+      }
+    }
+
+    function onMouseDown(event) {
+      if (isChatInputFocused) {
+        if (chatInput) chatInput.blur();
+        isChatInputFocused = false;
+      }
+      if (isShiftLockActive) {
+        return;
+      }
+      if (event.button === 0 || event.button === 2) {
+        isPointerDown = true;
+        previousMouseX = event.clientX;
+        previousMouseY = event.clientY;
+        setCursor('grabbing-cursor');
+        if (event.button === 2) event.preventDefault();
+      }
+    }
+
+    function onMouseUp(event) {
+      if (isShiftLockActive) {
+        return;
+      }
+      if (event.button === 0 || event.button === 2) {
+        if (isPointerDown) {
+          isPointerDown = false;
+          setCursor('default-cursor');
+        }
+      }
+    }
+
+    function onMouseMove(event) {
+      if (isShiftLockActive) {
+        handleShiftLockMovement(event);
+        return;
+      }
+      if (!isPointerDown) return;
+      const deltaX = event.clientX - previousMouseX;
+      const deltaY = event.clientY - previousMouseY;
+      cameraPhi -= deltaX * orbitSensitivity;
+      cameraTheta -= deltaY * orbitSensitivity;
+      cameraTheta = THREE.MathUtils.clamp(cameraTheta, minPolarAngle, maxPolarAngle);
+      cameraPhi %= (2 * Math.PI);
+      previousMouseX = event.clientX;
+      previousMouseY = event.clientY;
+    }
+
+    function handleShiftLockMovement(event) {
+      const deltaX = event.movementX || event.webkitMovementX || 0;
+      const deltaY = event.movementY || event.webkitMovementY || 0;
+      const shiftLockSensitivity = orbitSensitivity * 1.2;
+      cameraPhi -= deltaX * shiftLockSensitivity;
+      cameraTheta -= deltaY * shiftLockSensitivity;
+      cameraTheta = THREE.MathUtils.clamp(cameraTheta, minPolarAngle, maxPolarAngle);
+      cameraPhi %= (2 * Math.PI);
+      if (localPlayerAvatarGroup && localPlayerAvatarData && !isChatInputFocused) {
+        localPlayerAvatarGroup.rotation.y = cameraPhi + Math.PI;
+      }
+    }
+
+    function onMouseWheel(event) {
+      const delta = Math.sign(event.deltaY);
+      cameraDistance += delta * zoomSensitivity * cameraDistance;
+      cameraDistance = THREE.MathUtils.clamp(cameraDistance, minCameraDistance, maxCameraDistance);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      webglRenderer.setSize(window.innerWidth, window.innerHeight);
+      if (isShiftLockActive) {
+        shiftLockCenterX = window.innerWidth / 2;
+        shiftLockCenterY = window.innerHeight / 2;
+      }
+    }
+
+    function onPointerLockChange() {
+      const isLocked = document.pointerLockElement === canvas || document.mozPointerLockElement === canvas;
+      if (!isLocked && isShiftLockActive) {
+        setTimeout(() => {
+          if (isShiftLockActive && canvas.requestPointerLock) {
+            canvas.requestPointerLock();
+          }
+        }, 100);
+      }
+    }
+
+    function updateCameraTarget() {
+      if (localPlayerAvatarGroup && localPlayerAvatarData) {
+        cameraTarget.copy(localPlayerAvatarGroup.position);
+        const headTopY = localPlayerAvatarData.head.position.y + (HEAD_SIZE_CONST / 2);
+        const targetHeightOffset = headTopY * 1; // Could make this a const
+        cameraTarget.y += targetHeightOffset;
+      } else {
+        cameraTarget.set(0, 1.6, 0);
+      }
+    }
+
+    function setCursor(cursorClass) {
+      canvas.classList.remove('default-cursor', 'grabbing-cursor');
+      if (cursorClass) canvas.classList.add(cursorClass);
+    }
+
+    function toggleShiftLock() {
+      isShiftLockEnabled = !isShiftLockEnabled;
+      localStorage.setItem('shiftLockEnabled', isShiftLockEnabled.toString());
+      updateShiftLockUI();
+      if (!isShiftLockEnabled && isShiftLockActive) {
+        deactivateShiftLock();
+      }
+    }
+
+    function toggleShiftLockActive() {
+      isShiftLockActive = !isShiftLockActive;
+      if (isShiftLockActive) {
+        activateShiftLock();
+      } else {
+        deactivateShiftLock();
+      }
+    }
+
+    function updateShiftLockUI() {
+      const shiftLockValue = document.querySelector('.setting-item .setting-value');
+      if (shiftLockValue) {
+        shiftLockValue.textContent = isShiftLockEnabled ? 'On' : 'Off';
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) {
+          document.documentElement.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    function updateFullscreenToggle() {
+      const fullscreenToggle = document.querySelector('.toggle-switch[data-setting="fullscreen"]');
+      if (fullscreenToggle) {
+        if (document.fullscreenElement) {
+          fullscreenToggle.classList.add('active');
+        } else {
+          fullscreenToggle.classList.remove('active');
+        }
+      }
+    }
+
+    function toggleHealthMode() {
+      isHealthModeEnabled = !isHealthModeEnabled;
+      localStorage.setItem('healthModeEnabled', isHealthModeEnabled.toString());
+      updateHealthModeUI();
+      
+      if (isHealthModeEnabled) {
+        currentHealth = maxHealth;
+        lastDamageTime = Date.now();
+        updateHealthBar();
+        localStorage.setItem('currentHealth', currentHealth.toString());
+      }
+    }
+
+    function updateHealthModeUI() {
+      if (healthToggleIcon) {
+        const icon = healthToggleIcon.querySelector('i');
+        if (isHealthModeEnabled) {
+          icon.className = 'fas fa-heart-crack';
+          healthBarContainer.style.display = 'block';
+        } else {
+          icon.className = 'fas fa-shield';
+          healthBarContainer.style.display = 'none';
+        }
+      }
+    }
+
+    function updateHealthBar() {
+      if (!isHealthModeEnabled || !healthFill || !healthText) return;
+      
+      const healthPercent = (currentHealth / maxHealth) * 100;
+      healthFill.style.width = `${healthPercent}%`;
+      healthText.textContent = `${currentHealth} / ${maxHealth}`;
+      
+      // Update color based on health percentage
+      let color;
+      if (healthPercent > 66) {
+        color = '#44ff44'; // Green
+      } else if (healthPercent > 33) {
+        color = '#ff8844'; // Orange
+      } else {
+        color = '#ff4444'; // Red
+      }
+      healthFill.style.background = color;
+    }
+
+    function takeDamage(amount) {
+      if (!isHealthModeEnabled || isDead) return;
+      
+      currentHealth = Math.max(0, currentHealth - amount);
+      updateHealthBar();
+      localStorage.setItem('currentHealth', currentHealth.toString());
+      
+      if (currentHealth <= 0) {
+        triggerDeath();
+      }
+    }
+
+    function triggerDeath() {
+      if (isDead) return;
+      
+      isDead = true;
+      respawnTimer = respawnDelay;
+      
+      // Create ragdoll effect
+      createRagdoll();
+    }
+
+    function createRagdoll() {
+      if (!localPlayerAvatarGroup || !localPlayerAvatarData) return;
+      
+      // Clear existing ragdoll parts
+      cleanupRagdoll();
+      
+      // Get all body parts
+      const bodyParts = [
+        localPlayerAvatarData.head,
+        localPlayerAvatarData.torso,
+        localPlayerAvatarData.leftArm,
+        localPlayerAvatarData.rightArm,
+        localPlayerAvatarData.leftLeg,
+        localPlayerAvatarData.rightLeg
+      ];
+      
+      // Remove parts from avatar group and create independent physics objects
+      bodyParts.forEach(part => {
+        if (!part) return;
+        
+        // Get world position and rotation
+        const worldPos = new THREE.Vector3();
+        const worldRot = new THREE.Euler();
+        part.getWorldPosition(worldPos);
+        part.getWorldQuaternion(new THREE.Quaternion().setFromEuler(worldRot));
+        
+        // Clone the part for ragdoll
+        const ragdollPart = part.clone();
+        ragdollPart.position.copy(worldPos);
+        ragdollPart.rotation.copy(worldRot);
+        
+        // Add physics properties
+        ragdollPart.userData.velocityY = Math.random() * 2 - 1; // Random upward velocity
+        ragdollPart.userData.velocityX = (Math.random() - 0.5) * 4;
+        ragdollPart.userData.velocityZ = (Math.random() - 0.5) * 4;
+        ragdollPart.userData.angularVelocityX = (Math.random() - 0.5) * 6;
+        ragdollPart.userData.angularVelocityY = (Math.random() - 0.5) * 6;
+        ragdollPart.userData.angularVelocityZ = (Math.random() - 0.5) * 6;
+        ragdollPart.userData.isRagdoll = true;
+        
+        scene.add(ragdollPart);
+        ragdollParts.push(ragdollPart);
+        
+        // Hide original part
+        part.visible = false;
+      });
+      
+      // Hide the main avatar group
+      localPlayerAvatarGroup.visible = false;
+    }
+
+    function updateRagdoll(deltaTime) {
+      if (!isDead || ragdollParts.length === 0) return;
+      
+      ragdollParts.forEach(part => {
+        if (!part.userData.isRagdoll) return;
+        
+        // Apply gravity
+        part.userData.velocityY += gravity * deltaTime;
+        
+        // Update position
+        part.position.x += part.userData.velocityX * deltaTime;
+        part.position.y += part.userData.velocityY * deltaTime;
+        part.position.z += part.userData.velocityZ * deltaTime;
+        
+        // Update rotation
+        part.rotation.x += part.userData.angularVelocityX * deltaTime;
+        part.rotation.y += part.userData.angularVelocityY * deltaTime;
+        part.rotation.z += part.userData.angularVelocityZ * deltaTime;
+        
+        // Ground collision
+        if (part.position.y <= 0) {
+          part.position.y = 0;
+          part.userData.velocityY *= -0.3; // Bounce with energy loss
+          part.userData.velocityX *= 0.7; // Friction
+          part.userData.velocityZ *= 0.7;
+          part.userData.angularVelocityX *= 0.8;
+          part.userData.angularVelocityY *= 0.8;
+          part.userData.angularVelocityZ *= 0.8;
+        }
+        
+        // Apply air resistance
+        part.userData.velocityX *= 0.99;
+        part.userData.velocityZ *= 0.99;
+        part.userData.angularVelocityX *= 0.98;
+        part.userData.angularVelocityY *= 0.98;
+        part.userData.angularVelocityZ *= 0.98;
+      });
+    }
+
+    function cleanupRagdoll() {
+      ragdollParts.forEach(part => {
+        scene.remove(part);
+        if (part.geometry) part.geometry.dispose();
+        if (part.material) {
+          if (Array.isArray(part.material)) {
+            part.material.forEach(mat => mat.dispose());
+          } else {
+            part.material.dispose();
+          }
+        }
+      });
+      ragdollParts = [];
+    }
+
+    function respawnPlayer() {
+      if (!localPlayerAvatarGroup || !localPlayerAvatarData) return;
+      
+      // Clean up ragdoll
+      cleanupRagdoll();
+      
+      // Reset avatar visibility and position
+      localPlayerAvatarGroup.visible = true;
+      localPlayerAvatarGroup.position.set(0, 0, 0);
+      localPlayerAvatarGroup.rotation.set(0, 0, 0);
+      localPlayerAvatarGroup.scale.set(1, 1, 1);
+      
+      // Show all body parts
+      [
+        localPlayerAvatarData.head,
+        localPlayerAvatarData.torso,
+        localPlayerAvatarData.leftArm,
+        localPlayerAvatarData.rightArm,
+        localPlayerAvatarData.leftLeg,
+        localPlayerAvatarData.rightLeg
+      ].forEach(part => {
+        if (part) part.visible = true;
+      });
+      
+      // Reset physics
+      localPlayerAvatarData.velocityY = 0;
+      localPlayerAvatarData.isGrounded = true;
+      localPlayerAvatarData.jumpState = 'grounded';
+      
+      // Reset health and death state
+      currentHealth = maxHealth;
+      isDead = false;
+      respawnTimer = 0;
+      
+      updateHealthBar();
+      localStorage.setItem('currentHealth', currentHealth.toString());
+    }
+
+    function activateShiftLock() {
+      shiftLockCenterX = window.innerWidth / 2;
+      shiftLockCenterY = window.innerHeight / 2;
+      if (crosshairElement) {
+        crosshairElement.style.display = 'block';
+      }
+      document.body.style.cursor = 'none';
+      canvas.style.cursor = 'none';
+      if (localPlayerAvatarGroup && localPlayerAvatarData && !isChatInputFocused) {
+        localPlayerAvatarGroup.rotation.y = cameraPhi + Math.PI;
+      }
+      canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+      if (canvas.requestPointerLock) {
+        canvas.requestPointerLock();
+      }
+    }
+
+    function deactivateShiftLock() {
+      if (crosshairElement) {
+        crosshairElement.style.display = 'none';
+      }
+      document.body.style.cursor = '';
+      canvas.style.cursor = '';
+      setCursor('default-cursor');
+      if (document.exitPointerLock) {
+        document.exitPointerLock();
+      }
+    }
+
+    function addMessageToLog(senderName, message) {
+      const messageElement = document.createElement('p');
+      messageElement.textContent = `${senderName}: ${message}`;
+      chatLog.appendChild(messageElement);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function managePlayerChatBubble(playerData, message) {
+      let avatarData = playerData.avatarData || playerData;
+      if (!playerData || !avatarData || !avatarData.group || !avatarData.head) {
+        return;
+      }
+      if (!playerData.chatBubbles) {
+        playerData.chatBubbles = [];
+      }
+      if (playerData.chatBubbles.length >= MAX_CHAT_BUBBLES) {
+        const oldestBubble = playerData.chatBubbles.shift();
+        avatarData.group.remove(oldestBubble.sprite);
+        if (oldestBubble.sprite.material.map) oldestBubble.sprite.material.map.dispose();
+        oldestBubble.sprite.material.dispose();
+      }
+      const bubble = createTextSprite(message, avatarData.head);
+      avatarData.group.add(bubble);
+      const bubbleData = {
+        sprite: bubble,
+        opacity: 0,
+        state: 'fading-in',
+        timer: 0
+      };
+      playerData.chatBubbles.push(bubbleData);
+      updateChatBubblePositions(playerData, avatarData.head);
+      bubble.material.opacity = 0;
+    }
+
+    function updateChatBubblePositions(playerData, headMesh) {
+      if (!playerData.chatBubbles || playerData.chatBubbles.length === 0) return;
+      const headActualHeight = headMesh.geometry.parameters.height || HEAD_SIZE_CONST;
+      const headTopYInGroup = headMesh.position.y + (headActualHeight / 2);
+      const bubbleSpacing = 0.8;
+      for (let i = 0; i < playerData.chatBubbles.length; i++) {
+        const bubble = playerData.chatBubbles[i];
+        const reversedIndex = playerData.chatBubbles.length - 1 - i;
+        const yOffset = headTopYInGroup + 0.3 + (bubble.sprite.scale.y / 2) + (reversedIndex * bubbleSpacing);
+        bubble.sprite.position.set(0, yOffset, 0);
+      }
+    }
+
+    function createTextSprite(message, headMesh) {
+      const canvasEl = document.createElement('canvas');
+      const context = canvasEl.getContext('2d');
+      const font = "bold 18px 'Poppins', sans-serif";
+      context.font = font;
+      const textMetrics = context.measureText(message);
+      let textWidth = textMetrics.width;
+      const maxWidth = 200;
+      const lines = [];
+      if (textWidth > maxWidth) {
+        let currentLine = '';
+        const words = message.split(' ');
+        for (let word of words) {
+          const testLine = currentLine + word + ' ';
+          const metrics = context.measureText(testLine);
+          if (metrics.width > maxWidth && currentLine !== '') {
+            lines.push(currentLine.trim());
+            currentLine = word + ' ';
+          } else {
+            currentLine = testLine;
+          }
+        }
+        lines.push(currentLine.trim());
+        textWidth = maxWidth;
+      } else {
+        lines.push(message);
+      }
+      const lineHeight = 22;
+      const textHeight = lines.length * lineHeight;
+      const padding = 5;
+      const bubbleWidth = textWidth + padding * 2;
+      const bubbleHeight = textHeight + padding * 1.5;
+      const borderRadius = 10;
+      canvasEl.width = THREE.MathUtils.ceilPowerOfTwo(bubbleWidth);
+      canvasEl.height = THREE.MathUtils.ceilPowerOfTwo(bubbleHeight);
+      context.font = font;
+      context.fillStyle = 'rgba(5, 5, 5, 0.95)';
+      context.beginPath();
+      context.moveTo(borderRadius, 0);
+      context.lineTo(canvasEl.width - borderRadius, 0);
+      context.quadraticCurveTo(canvasEl.width, 0, canvasEl.width, borderRadius);
+      context.lineTo(canvasEl.width, canvasEl.height - borderRadius);
+      context.quadraticCurveTo(canvasEl.width, canvasEl.height, canvasEl.width - borderRadius, canvasEl.height);
+      context.lineTo(borderRadius, canvasEl.height);
+      context.quadraticCurveTo(0, canvasEl.height, 0, canvasEl.height - borderRadius);
+      context.lineTo(0, borderRadius);
+      context.quadraticCurveTo(0, 0, borderRadius, 0);
+      context.closePath();
+      context.fill();
+      context.fillStyle = 'white';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      let currentY = (canvasEl.height - textHeight) / 2 + lineHeight / 2;
+      for (const line of lines) {
+        context.fillText(line, canvasEl.width / 2, currentY);
+        currentY += lineHeight;
+      }
+      const texture = new THREE.CanvasTexture(canvasEl);
+      texture.needsUpdate = true;
+      const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthTest: false
+      });
+      const sprite = new THREE.Sprite(material);
+      const spriteScaleFactor = 2.0;
+      sprite.scale.set((canvasEl.width / 100) * spriteScaleFactor, (canvasEl.height / 100) * spriteScaleFactor, 1.0);
+      const headActualHeight = headMesh.geometry.parameters.height || HEAD_SIZE_CONST;
+      const headTopYInGroup = headMesh.position.y + (headActualHeight / 2);
+      sprite.position.set(0, headTopYInGroup + 0.3 + ((canvasEl.height / 100) * spriteScaleFactor) / 2, 0);
+      return sprite;
+    }
+
+    function updatePlayerChatBubble(playerData, deltaTime) {
+      if (!playerData.chatBubbles || playerData.chatBubbles.length === 0) return;
+      let avatarData = playerData.avatarData || playerData;
+      for (let i = playerData.chatBubbles.length - 1; i >= 0; i--) {
+        const bubble = playerData.chatBubbles[i];
+        if (bubble.state === 'fading-in') {
+          bubble.opacity += deltaTime / CHAT_BUBBLE_FADE_DURATION;
+          if (bubble.opacity >= 1.0) {
+            bubble.opacity = 1.0;
+            bubble.state = 'visible';
+            bubble.timer = 0;
+          }
+          bubble.sprite.material.opacity = bubble.opacity;
+        } else if (bubble.state === 'visible') {
+          bubble.timer += deltaTime;
+          if (bubble.timer >= CHAT_BUBBLE_VISIBLE_DURATION) {
+            bubble.state = 'fading-out';
+          }
+        } else if (bubble.state === 'fading-out') {
+          bubble.opacity -= deltaTime / CHAT_BUBBLE_FADE_DURATION;
+          if (bubble.opacity <= 0.0) {
+            avatarData.group.remove(bubble.sprite);
+            if (bubble.sprite.material.map) bubble.sprite.material.map.dispose();
+            bubble.sprite.material.dispose();
+            playerData.chatBubbles.splice(i, 1);
+            updateChatBubblePositions(playerData, avatarData.head);
+          } else {
+            bubble.sprite.material.opacity = bubble.opacity;
+          }
+        }
+      }
+    }
+
+    function handlePlayerCollisions() {
+      const minDistance = 1.0; // Could be a const
+      const players = [];
+      if (localPlayerAvatarGroup) {
+        players.push({ group: localPlayerAvatarGroup, isLocal: true });
+      }
+      remotePlayers.forEach(player => {
+        if (player.avatarData && player.avatarData.group) {
+          players.push({ group: player.avatarData.group, isLocal: false });
+        }
+      });
+      for (let i = 0; i < players.length; i++) {
+        for (let j = i + 1; j < players.length; j++) {
+          const groupA = players[i].group;
+          const groupB = players[j].group;
+          // OPTIMIZATION: Use _collisionDiff vector
+          _collisionDiff.subVectors(groupB.position, groupA.position);
+          _collisionDiff.y = 0; // Ignore vertical distance for collision
+          const distance = _collisionDiff.length();
+          if (distance < minDistance && distance > 0.001) { // Added small epsilon to avoid division by zero if distance is 0
+            const overlap = minDistance - distance;
+            _collisionDiff.normalize(); // diff is already normalized by length() if needed, but explicit normalize is safer
+            
+            // Push factor based on local vs remote to give local player more "authority" or equal push
+            const pushFactorA = players[i].isLocal ? -overlap * 0.2 : -overlap * (players[j].isLocal ? 0.8 : 0.5);
+            const pushFactorB = players[j].isLocal ? overlap * 0.2 : overlap * (players[i].isLocal ? 0.8 : 0.5);
+
+            groupA.position.addScaledVector(_collisionDiff, pushFactorA);
+            groupB.position.addScaledVector(_collisionDiff, pushFactorB);
+          }
+        }
+      }
+    }
+
+    function animateAvatarLimbs(avatarData, isMoving, isGrounded, currentWalkPhase, deltaTime) {
+      const { leftLeg, rightLeg, leftArm, rightArm, head, torso } = avatarData;
+      let newWalkPhase = currentWalkPhase;
+      updateJumpAnimation(avatarData, isGrounded, deltaTime);
+      
+      // Initialize idle animation timer if not exists
+      if (avatarData.idleTimer === undefined) {
+        avatarData.idleTimer = 0;
+      }
+      
+      if (avatarData.currentEmote) {
+        const emoteElapsed = clock.getElapsedTime() - avatarData.emoteStartTime;
+        if (emoteElapsed >= EMOTE_DURATION) {
+          avatarData.currentEmote = null;
+          avatarData.emoteStartTime = 0;
+          avatarData.emotePhase = 0;
+        } else {
+          if (avatarData.currentEmote === 'wave') {
+            avatarData.emotePhase += WAVE_SPEED * deltaTime;
+            rightArm.rotation.x = 0;
+            rightArm.rotation.z = -Math.PI / 2.5 + Math.sin(avatarData.emotePhase) * 0.4;
+            leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, idleLerpFactor);
+            leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, idleLerpFactor);
+            leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, idleLerpFactor);
+            rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, idleLerpFactor);
+          } else if (avatarData.currentEmote === 'dance') {
+            avatarData.emotePhase += DANCE_SPEED * deltaTime;
+            const dancePhase = avatarData.emotePhase;
+            leftArm.rotation.x = Math.sin(dancePhase) * DANCE_AMPLITUDE;
+            rightArm.rotation.x = Math.sin(dancePhase + Math.PI) * DANCE_AMPLITUDE;
+            leftArm.rotation.z = Math.sin(dancePhase * 0.7) * 0.3;
+            rightArm.rotation.z = Math.sin(dancePhase * 0.7 + Math.PI) * 0.3;
+            if (torso) {
+              torso.rotation.z = Math.sin(dancePhase * 0.5) * 0.2;
+            }
+            leftLeg.rotation.x = Math.sin(dancePhase * 0.8) * 0.3;
+            rightLeg.rotation.x = Math.sin(dancePhase * 0.8 + Math.PI) * 0.3;
+          }
+          return newWalkPhase;
+        }
+      }
+      if (leftArm.rotation.z !== 0) leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, idleLerpFactor);
+      if (rightArm.rotation.z !== 0) rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, 0, idleLerpFactor);
+      if (torso && torso.rotation.z !== 0) torso.rotation.z = THREE.MathUtils.lerp(torso.rotation.z, 0, idleLerpFactor);
+      if (!isGrounded) {
+        // const jumpProgress = Math.min((avatarData.velocityY + 5) / 10, 1); // Unused
+        const airTime = clock.getElapsedTime() - avatarData.jumpStartTime;
+        if (avatarData.velocityY > 0) { // Going up
+          const risePose = jumpPoseAmount * (1 + Math.sin(airTime * 4) * 0.2);
+          leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, risePose, 0.3);
+          rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, risePose, 0.3);
+          leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -jumpPoseAmount * 0.3, 0.3);
+          rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -jumpPoseAmount * 0.3, 0.3);
+        } else { // Falling
+          leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, jumpPoseAmount * 0.5, 0.3);
+          rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, jumpPoseAmount * 0.5, 0.3);
+          leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -jumpPoseAmount * 0.8, 0.3);
+          rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -jumpPoseAmount * 0.8, 0.3);
+        }
+        newWalkPhase = 0; // Reset walk phase in air
+        avatarData.idleTimer = 0; // Reset idle timer when not grounded
+      } else if (isMoving) {
+        newWalkPhase += walkCycleSpeed * deltaTime;
+        newWalkPhase %= (2 * Math.PI); // Keep phase within 0-2PI
+        leftLeg.rotation.x = Math.sin(newWalkPhase) * walkAmplitude;
+        rightLeg.rotation.x = -Math.sin(newWalkPhase) * walkAmplitude;
+        leftArm.rotation.x = -Math.sin(newWalkPhase) * walkAmplitude * 0.7;
+        rightArm.rotation.x = Math.sin(newWalkPhase) * walkAmplitude * 0.7;
+        avatarData.idleTimer = 0; // Reset idle timer when moving
+      } else { // Idle on ground
+        newWalkPhase = 0;
+        avatarData.idleTimer += deltaTime;
+        
+        // Subtle idle breathing animation - reduced amplitudes for higher quality
+        const breathingSpeed = 1.2;
+        const breathingAmplitude = 0.04;
+        const headBobAmplitude = 0.015;
+        const armSwayAmplitude = 0.02;
+        
+        const breathingPhase = avatarData.idleTimer * breathingSpeed;
+        const breathingOffset = Math.sin(breathingPhase) * breathingAmplitude;
+        const headBob = Math.sin(breathingPhase * 0.8) * headBobAmplitude;
+        const armSway = Math.sin(breathingPhase * 0.6) * armSwayAmplitude;
+        
+        // Apply breathing to torso - reduced intensity
+        if (torso) {
+          if (!avatarData.torsoOriginalY) avatarData.torsoOriginalY = torso.position.y;
+          torso.position.y = avatarData.torsoOriginalY + breathingOffset * 0.15;
+        }
+        
+        // Apply head bob - move the entire head including face elements
+        if (head) {
+          if (!avatarData.headOriginalY) avatarData.headOriginalY = head.position.y;
+          const headMovement = headBob + breathingOffset * 0.2;
+          head.position.y = avatarData.headOriginalY + headMovement;
+          
+          // Move face elements with the head to maintain proper positioning
+          const faceElements = avatarData.group.children.filter(child => 
+            child !== head && child !== avatarData.torso && 
+            child !== avatarData.leftArm && child !== avatarData.rightArm && 
+            child !== avatarData.leftLeg && child !== avatarData.rightLeg &&
+            child !== avatarData.usernameSprite
+          );
+          
+          faceElements.forEach(element => {
+            if (!element.userData.originalY) {
+              element.userData.originalY = element.position.y;
+            }
+            element.position.y = element.userData.originalY + headMovement;
+          });
+        }
+        
+        // Subtle arm sway
+        const leftArmTargetX = armSway * 0.5;
+        const rightArmTargetX = -armSway * 0.5;
+        
+        leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, leftArmTargetX, idleLerpFactor);
+        rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, rightArmTargetX, idleLerpFactor);
+        leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, idleLerpFactor);
+        rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, idleLerpFactor);
+      }
+      return newWalkPhase;
+    }
+
+    function updateJumpAnimation(avatarData, isGrounded, deltaTime) {
+      if (!avatarData.group) return;
+      const currentTime = clock.getElapsedTime();
+      if (avatarData.jumpState === 'grounded' && !isGrounded) { // Started jump
+        avatarData.jumpState = 'jumping';
+        avatarData.jumpStartTime = currentTime;
+        avatarData.landingSquash = 0; // Reset landing squash
+      } else if (avatarData.jumpState === 'jumping' && isGrounded) { // Landed
+        avatarData.jumpState = 'landing';
+        avatarData.jumpStartTime = currentTime; // Reset timer for landing animation
+        avatarData.landingSquash = jumpSquashFactor;
+      } else if (avatarData.jumpState === 'landing' && currentTime - avatarData.jumpStartTime > 0.2) { // Finished landing
+        avatarData.jumpState = 'grounded';
+        avatarData.landingSquash = 0;
+      }
+
+      let scaleY = 1;
+      let scaleXZ = 1;
+
+      if (avatarData.jumpState === 'jumping') {
+        const jumpTime = currentTime - avatarData.jumpStartTime;
+        if (jumpTime < 0.1) { // Anticipation squash
+          const squashProgress = jumpTime / 0.1;
+          scaleY = 1 - jumpSquashFactor * (1 - squashProgress);
+          scaleXZ = 1 + jumpSquashFactor * 0.5 * (1 - squashProgress);
+        } else if (avatarData.velocityY > 0) { // Stretch on rise
+          const stretchAmount = Math.min(avatarData.velocityY / jumpImpulse, 1) * jumpStretchFactor;
+          scaleY = 1 + stretchAmount;
+          scaleXZ = 1 - stretchAmount * 0.3;
+        }
+      } else if (avatarData.jumpState === 'landing') {
+        const landingTime = currentTime - avatarData.jumpStartTime;
+        const landingProgress = Math.min(landingTime / 0.2, 1); // Landing squash/recovery duration
+        const squashAmount = avatarData.landingSquash * (1 - landingProgress); // Squash decreases over time
+        scaleY = 1 - squashAmount;
+        scaleXZ = 1 + squashAmount * 0.5;
+      }
+      
+      // Lerp scale for smooth transitions
+      avatarData.group.scale.y = THREE.MathUtils.lerp(avatarData.group.scale.y, scaleY, 0.3);
+      avatarData.group.scale.x = THREE.MathUtils.lerp(avatarData.group.scale.x, scaleXZ, 0.3);
+      avatarData.group.scale.z = THREE.MathUtils.lerp(avatarData.group.scale.z, scaleXZ, 0.3);
+    }
+
+    function update(deltaTime) {
+      const elapsedTime = clock.getElapsedTime();
+      if (!isChatInputFocused && !isShiftLockActive) {
+        const cameraRotationSpeed = 2.0;
+        if (moveState.cameraLeft) {
+          cameraPhi += cameraRotationSpeed * deltaTime;
+        }
+        if (moveState.cameraRight) {
+          cameraPhi -= cameraRotationSpeed * deltaTime;
+        }
+        cameraPhi %= (2 * Math.PI);
+      }
+      if (localPlayerAvatarGroup && localPlayerAvatarData) {
+        const groundLevel = 0.0;
+        localPlayerAvatarData.velocityY += gravity * deltaTime;
+        localPlayerAvatarGroup.position.y += localPlayerAvatarData.velocityY * deltaTime;
+        if (localPlayerAvatarGroup.position.y <= groundLevel) {
+          localPlayerAvatarGroup.position.y = groundLevel;
+          localPlayerAvatarData.velocityY = 0;
+          if (!localPlayerAvatarData.isGrounded) { // Just landed
+             // Landing logic is handled by updateJumpAnimation's state changes
+          }
+          localPlayerAvatarData.isGrounded = true;
+        } else {
+          localPlayerAvatarData.isGrounded = false;
+        }
+        if (moveState.jump && localPlayerAvatarData.isGrounded && !isChatInputFocused && !isDead) {
+          const currentTime = clock.getElapsedTime();
+          if (currentTime - localPlayerAvatarData.lastJumpTime >= jumpCooldown) {
+            // Jump state change handled by updateJumpAnimation
+            localPlayerAvatarData.velocityY = jumpImpulse;
+            localPlayerAvatarData.isGrounded = false; // Will be set by physics next frame
+            localPlayerAvatarData.lastJumpTime = currentTime;
+          }
+        }
+        // OPTIMIZATION: Use pre-allocated vectors
+        camera.getWorldDirection(_cameraForward);
+        _cameraForward.y = 0;
+        _cameraForward.normalize();
+        _cameraRight.crossVectors(camera.up, _cameraForward).normalize().negate();
+        _movementDirection.set(0, 0, 0);
+        if (!isChatInputFocused && !isDead) {
+          if (moveState.forward) _movementDirection.add(_cameraForward);
+          if (moveState.backward) _movementDirection.sub(_cameraForward);
+          if (moveState.left) _movementDirection.sub(_cameraRight);
+          if (moveState.right) _movementDirection.add(_cameraRight);
+        }
+        // Handle respawn timer
+        if (isDead && respawnTimer > 0) {
+          respawnTimer -= deltaTime;
+          if (respawnTimer <= 0) {
+            respawnPlayer();
+          }
+        }
+
+        const isMoving = _movementDirection.lengthSq() > 0.001 && !isDead;
+        if (isMoving) {
+          _movementDirection.normalize();
+          // OPTIMIZATION: Use _vector3 for temporary calculation if needed, or apply directly
+          _vector3.copy(_movementDirection).multiplyScalar(moveSpeed * deltaTime);
+          localPlayerAvatarGroup.position.add(_vector3);
+          if (!isShiftLockActive) {
+            const targetAngle = Math.atan2(_movementDirection.x, _movementDirection.z);
+            let currentAngle = localPlayerAvatarGroup.rotation.y;
+            let deltaAngle = targetAngle - currentAngle;
+            while (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
+            while (deltaAngle < -Math.PI) deltaAngle += Math.PI * 2;
+            localPlayerAvatarGroup.rotation.y += deltaAngle * rotationLerpFactor;
+          }
+        }
+        const isActuallyWalking = isMoving && localPlayerAvatarData.isGrounded;
+        localPlayerAvatarData.walkPhase = animateAvatarLimbs(localPlayerAvatarData, isActuallyWalking, localPlayerAvatarData.isGrounded, localPlayerAvatarData.walkPhase, deltaTime);
+        if (socket && socket.readyState === WebSocket.OPEN && Date.now() - lastPlayerUpdateSent > playerUpdateInterval) {
+          // OPTIMIZATION: Reuse _vector3 for velocity if not moving, or use _movementDirection
+          const velocityToSend = isMoving ? _vector3.copy(_movementDirection).multiplyScalar(moveSpeed) : _vector3.set(0,0,0);
+          socket.send(JSON.stringify({
+            type: 'player_update',
+            state: {
+              position: { x: localPlayerAvatarGroup.position.x, y: localPlayerAvatarGroup.position.y, z: localPlayerAvatarGroup.position.z },
+              rotationY: localPlayerAvatarGroup.rotation.y,
+              isMoving: isActuallyWalking,
+              isGrounded: localPlayerAvatarData.isGrounded,
+              velocityY: localPlayerAvatarData.velocityY,
+              velocity: { x: velocityToSend.x, y: 0, z: velocityToSend.z }, // y velocity is physics based, not movement based
+              timestamp: Date.now()
+            }
+          }));
+          lastPlayerUpdateSent = Date.now();
+        }
+        updatePlayerChatBubble(localPlayerAvatarData, deltaTime);
+        
+        // Health damage system removed - no automatic damage
+      }
+      remotePlayers.forEach(player => {
+        if (player.avatarData && player.avatarData.group) {
+          const lerpFactor = Math.min(deltaTime * 15, 0.5); // Adjusted lerp factor for smoother updates
+          player.avatarData.group.position.lerp(player.targetPosition, lerpFactor);
+          let currentRotY = player.avatarData.group.rotation.y;
+          let targetRotY = player.targetRotationY;
+          let deltaRot = targetRotY - currentRotY;
+          while (deltaRot > Math.PI) deltaRot -= Math.PI * 2;
+          while (deltaRot < -Math.PI) deltaRot += Math.PI * 2;
+          player.avatarData.group.rotation.y += deltaRot * lerpFactor * 2; // Faster rotation lerp
+          player.walkPhase = animateAvatarLimbs(player.avatarData, player.isMoving, player.isGrounded, player.walkPhase, deltaTime);
+          updatePlayerChatBubble(player, deltaTime);
+        }
+      });
+      handlePlayerCollisions();
+      // Update infinite world chunks based on player position
+      if (localPlayerAvatarGroup) {
+        updateWorldChunks(localPlayerAvatarGroup.position.x, localPlayerAvatarGroup.position.z);
+      }
+      
+      // Perform frustum culling every few frames for performance
+      if (Math.floor(elapsedTime * 10) % 3 === 0) {
+        performFrustumCulling();
+      }
+      
+      updateRagdoll(deltaTime);
+      updateGrassAnimation(deltaTime);
+      updateSky(elapsedTime);
+      updateCloudAnimation(deltaTime, elapsedTime);
+      updateDynamicShadows();
+      updateCameraTarget();
+      // OPTIMIZATION: Use pre-allocated vectors
+      _sphericalOffset.setFromSphericalCoords(cameraDistance, cameraTheta, cameraPhi);
+      _desiredCameraPosition.addVectors(cameraTarget, _sphericalOffset);
+      const groundY = 0.0; // Camera collision with ground
+      if (_desiredCameraPosition.y < groundY + minCameraHeight) {
+        _desiredCameraPosition.y = groundY + minCameraHeight;
+      }
+      camera.position.lerp(_desiredCameraPosition, cameraLerpFactor);
+      camera.lookAt(cameraTarget);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const deltaTime = Math.min(clock.getDelta(), 0.1); // Cap delta time
+      update(deltaTime);
+      webglRenderer.render(scene, camera);
+    }
+
+    function connectWebSocket() {
+      socket = new WebSocket(`ws://${window.location.host}/roblox`);
+      socket.binaryType = 'arraybuffer';
+      socket.onopen = () => {
+        if (socket.extensions && socket.extensions.includes('permessage-deflate')) {
+          console.log('WebSocket compression enabled');
+        }
+        loadingState.webSocketConnected = true;
+        checkLoadingComplete();
+      };
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        switch (data.type) {
+          case 'assign_id':
+            localPlayerId = data.id;
+            if (localPlayerAvatarData && data.initialState) {
+              localPlayerAvatarGroup.position.set(data.initialState.position.x, data.initialState.position.y, data.initialState.position.z);
+              localPlayerAvatarGroup.rotation.y = data.initialState.rotationY;
+              localPlayerAvatarData.isMoving = data.initialState.isMoving;
+              localPlayerAvatarData.isGrounded = data.initialState.isGrounded;
+              localPlayerAvatarData.velocityY = data.initialState.velocityY;
+            }
+            updatePlayerListUI();
+            loadingState.playerIdAssigned = true;
+            setTimeout(() => {
+              if (!loadingState.existingPlayersReceived) {
+                loadingState.existingPlayersReceived = true;
+                checkLoadingComplete();
+              }
+            }, 1000);
+            checkLoadingComplete();
+            break;
+          case 'existing_players':
+            data.playersData.forEach(playerInfo => {
+              if (playerInfo.id !== localPlayerId) {
+                addRemotePlayer(playerInfo.id, playerInfo.state);
+              }
+            });
+            updatePlayerListUI();
+            loadingState.existingPlayersReceived = true;
+            checkLoadingComplete();
+            break;
+          case 'player_joined':
+            if (data.playerData.id !== localPlayerId) {
+              addRemotePlayer(data.playerData.id, data.playerData.state);
+              updatePlayerListUI();
+            }
+            break;
+          case 'player_left':
+            removeRemotePlayer(data.id);
+            updatePlayerListUI();
+            break;
+          case 'player_update':
+            if (data.id !== localPlayerId) {
+              const player = remotePlayers.get(data.id);
+              if (player) {
+                const now = Date.now();
+                const latency = data.state.timestamp ? (now - data.state.timestamp) / 2 : 0; // Simplified latency estimation
+                // OPTIMIZATION: Use _vector3 for predictedPosition
+                _vector3.set(data.state.position.x, data.state.position.y, data.state.position.z);
+                if (data.state.velocity && latency > 0) {
+                  const timeAhead = latency / 1000; // Convert ms to s
+                  // OPTIMIZATION: Use _dummyObject.position as temp vector for velocity calculation
+                  _dummyObject.position.set(data.state.velocity.x, 0, data.state.velocity.z); // Assuming velocity.y is not used for horizontal prediction
+                  _vector3.addScaledVector(_dummyObject.position, timeAhead);
+                }
+                player.targetPosition.copy(_vector3);
+                player.targetRotationY = data.state.rotationY;
+                player.isMoving = data.state.isMoving;
+                player.isGrounded = data.state.isGrounded !== undefined ? data.state.isGrounded : true;
+                player.velocityY = data.state.velocityY;
+                player.velocity = data.state.velocity || { x: 0, y: 0, z: 0 }; // Store for potential future use
+                player.lastUpdateTime = now;
+              }
+            }
+            break;
+          case 'chat_message':
+            const senderName = data.senderId === localPlayerId ? "You" : getPlayerListDisplayName(data.senderId, false);
+            addMessageToLog(senderName, data.message);
+            if (data.senderId === localPlayerId && localPlayerAvatarData) {
+              managePlayerChatBubble(localPlayerAvatarData, data.message);
+            } else {
+              const remotePlayer = remotePlayers.get(data.senderId);
+              if (remotePlayer) {
+                managePlayerChatBubble(remotePlayer, data.message);
+              }
+            }
+            break;
+          case 'chat_history':
+            if (chatLog) chatLog.innerHTML = '';
+            data.history.forEach(chatEntry => {
+              const histSenderName = chatEntry.senderId === localPlayerId ? "You" : getPlayerListDisplayName(chatEntry.senderId, false);
+              addMessageToLog(histSenderName, chatEntry.message);
+            });
+            if (chatLog) chatLog.scrollTop = chatLog.scrollHeight;
+            loadingState.chatHistoryReceived = true;
+            checkLoadingComplete();
+            break;
+          case 'emote_start':
+            if (data.playerId === localPlayerId && localPlayerAvatarData) {
+              localPlayerAvatarData.currentEmote = data.emote;
+              localPlayerAvatarData.emoteStartTime = clock.getElapsedTime();
+              localPlayerAvatarData.emotePhase = 0;
+            } else {
+              const remotePlayer = remotePlayers.get(data.playerId);
+              if (remotePlayer && remotePlayer.avatarData) {
+                remotePlayer.avatarData.currentEmote = data.emote;
+                remotePlayer.avatarData.emoteStartTime = clock.getElapsedTime(); // Use client's clock for consistent emote timing display
+                remotePlayer.avatarData.emotePhase = 0;
+              }
+            }
+            break;
+        }
+      };
+      socket.onclose = () => {
+        addMessageToLog("System", "Disconnected from server.");
+        remotePlayers.forEach(player => {
+          if (player.avatarData && player.avatarData.group) {
+            // OPTIMIZATION: Dispose geometries before removing from scene
+            player.avatarData.group.traverse(object => {
+              if (object.isMesh && object.geometry) {
+                object.geometry.dispose();
+              }
+            });
+            scene.remove(player.avatarData.group);
+          }
+          if (player.chatBubbles) {
+            player.chatBubbles.forEach(bubble => {
+              if (bubble.sprite.parent) bubble.sprite.parent.remove(bubble.sprite); // Ensure removal from group
+              if (bubble.sprite.material.map) bubble.sprite.material.map.dispose();
+              bubble.sprite.material.dispose();
+            });
+          }
+          if (player.usernameSprite) {
+             if (player.usernameSprite.parent) player.usernameSprite.parent.remove(player.usernameSprite);
+             if (player.usernameSprite.material.map) player.usernameSprite.material.map.dispose();
+             player.usernameSprite.material.dispose();
+          }
+        });
+        remotePlayers.clear();
+        updatePlayerListUI();
+      };
+      setTimeout(() => {
+        if (!loadingState.chatHistoryReceived) {
+          loadingState.chatHistoryReceived = true;
+          checkLoadingComplete();
+        }
+      }, 2000);
+      socket.onerror = (error) => {
+        addMessageToLog("System", "Connection error.");
+      };
+    }
+
+    function addRemotePlayer(id, initialState) {
+      if (remotePlayers.has(id)) return;
+      const remoteUsername = getAvatarUsername(id);
+      const avatarData = createAvatarInstance(remoteUsername);
+      scene.add(avatarData.group);
+      avatarData.group.position.set(initialState.position.x, initialState.position.y, initialState.position.z);
+      avatarData.group.rotation.y = initialState.rotationY;
+      const player = {
+        id: id,
+        avatarData: avatarData,
+        targetPosition: new THREE.Vector3().copy(initialState.position),
+        targetRotationY: initialState.rotationY,
+        isMoving: initialState.isMoving || false,
+        isGrounded: initialState.isGrounded !== undefined ? initialState.isGrounded : true,
+        velocityY: initialState.velocityY || 0,
+        walkPhase: 0,
+        chatBubbles: [],
+        usernameSprite: avatarData.usernameSprite, // Already part of avatarData.group
+        velocity: { x: 0, y: 0, z: 0 },
+        lastUpdateTime: Date.now()
+      };
+      // Initialize jump animation state for remote players
+      avatarData.jumpState = 'grounded';
+      avatarData.jumpStartTime = 0;
+      avatarData.originalScale = new THREE.Vector3(1, 1, 1); // Already part of avatarData
+      avatarData.landingSquash = 0;
+      avatarData.currentEmote = null;
+      avatarData.emoteStartTime = 0;
+      avatarData.emotePhase = 0;
+      remotePlayers.set(id, player);
+    }
+
+    function removeRemotePlayer(id) {
+      const player = remotePlayers.get(id);
+      if (player) {
+        if (player.avatarData && player.avatarData.group) {
+          // OPTIMIZATION: Dispose all geometries within the avatar group
+          player.avatarData.group.traverse(object => {
+            if (object.isMesh && object.geometry) {
+              object.geometry.dispose();
+            }
+            // Avatar body part materials are shared, so don't dispose them here.
+          });
+          scene.remove(player.avatarData.group);
+        }
+        // Chat bubble disposal
+        if (player.chatBubbles) {
+          player.chatBubbles.forEach(bubble => {
+            // Group reference might be gone if avatarData.group was removed, ensure sprite is handled
+            if (bubble.sprite.parent) bubble.sprite.parent.remove(bubble.sprite);
+            if (bubble.sprite.material.map) bubble.sprite.material.map.dispose();
+            bubble.sprite.material.dispose();
+          });
+        }
+        // Username sprite disposal (material and map)
+        if (player.usernameSprite) { // usernameSprite is part of avatarData.group
+             if (player.usernameSprite.parent) player.usernameSprite.parent.remove(player.usernameSprite); // Should be removed with group
+             if (player.usernameSprite.material.map) player.usernameSprite.material.map.dispose();
+             player.usernameSprite.material.dispose();
+        }
+        remotePlayers.delete(id);
+      }
+    }
+
+    function updatePlayerListUI() {
+      if (!playerListBody) return;
+      playerListBody.innerHTML = '';
+      if (localPlayerId) {
+        const localPlayerItem = document.createElement('div');
+        localPlayerItem.classList.add('player-item');
+        localPlayerItem.textContent = getPlayerListDisplayName(localPlayerId, true);
+        playerListBody.appendChild(localPlayerItem);
+      }
+      remotePlayers.forEach(player => {
+        const playerItem = document.createElement('div');
+        playerItem.classList.add('player-item');
+        playerItem.textContent = getPlayerListDisplayName(player.id, false);
+        playerListBody.appendChild(playerItem);
+      });
+    }
+
+    function updatePeopleTab() {
+      const peopleList = document.getElementById('people-list');
+      if (!peopleList) return;
+      peopleList.innerHTML = '';
+      if (localPlayerId) {
+        const playerEntry = document.createElement('div');
+        playerEntry.className = 'player-entry';
+        playerEntry.innerHTML = `
+                <div class="player-info">
+                    <div class="player-avatar">Y</div>
+                    <div class="player-details">
+                        <h4>You</h4>
+                        <p>@${localPlayerId.substring(0, 6)}</p>
+                    </div>
+                </div>
+            `;
+        peopleList.appendChild(playerEntry);
+      }
+      remotePlayers.forEach(player => {
+        const playerEntry = document.createElement('div');
+        playerEntry.className = 'player-entry';
+        const playerName = getPlayerListDisplayName(player.id, false);
+        const initial = playerName.charAt(0).toUpperCase();
+        playerEntry.innerHTML = `
+                <div class="player-info">
+                    <div class="player-avatar">${initial}</div>
+                    <div class="player-details">
+                        <h4>${playerName}</h4>
+                        <p>@${player.id.substring(0, 6)}</p>
+                    </div>
+                </div>
+            `;
+        peopleList.appendChild(playerEntry);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeGame();
+    });
+  </script>
+</body>
+
+</html>
